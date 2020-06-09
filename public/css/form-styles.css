@@ -1,0 +1,209 @@
+.form-title{
+    padding: 10px;
+    border-radius: 7px 7px 0 0;
+    border-top: 2px solid white;
+    border-bottom: 2px rgba(2,137,54,0.6) solid;
+    background-color: #F6FAF5;
+}
+
+.form-title2{
+    display: block;
+    width: 100%;
+    font-size: 18px;
+    color: #028936;
+    text-align: center;
+    font-weight: bold;
+}
+  
+.container-forms{
+    padding: 20px;
+    border: 1px solid #bddcc5;
+    border-top: transparent;
+    background-color: white;
+    border-radius: 0 0 7px 7px;
+    box-shadow: 0px 1px 6px 2px rgba(2,137,54,0.2);  
+}
+
+.input100:focus + .focus-input100::before {
+    width: 100%;
+}
+  
+.has-val.input100 + .focus-input100::before {
+    width: 100%;
+}
+
+.focus-input100 {
+    position: absolute;
+    display: block;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+  
+.focus-input100::before {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 1px;
+  
+    -webkit-transition: all 0.6s;
+    -o-transition: all 0.6s;
+    -moz-transition: all 0.6s;
+    transition: all 0.6s;
+  
+    background: #57b846;
+}
+
+/* COLOR DE FOCUS DE LOS FORMULARIOS */
+.form-control:focus {
+    border-color: none;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+/* CSS DEL ICONO */
+.icon-box{
+    border-radius: .25rem 0 0 .25rem;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    width: 50px;
+    height: calc(2.19rem + 10px);
+    display: flex;
+    align-items: center;
+    padding: .375rem .75rem;
+    margin-bottom: 0;
+    font-size: .9rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #495057;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* EL CSS PARA EL BOTON DE ENVIAR */
+.form-btn {
+    padding: 0 20px;
+    min-width: 160px;
+    height: 50px;
+    background-color: rgba(2,137,54,0.65);
+    border-radius: 25px;
+    font-family: Poppins-Regular;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1.2;
+    outline: none !important;
+    border: none;
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    transition: all 1s ease;
+}
+
+.form-btn:hover {
+    background-color: #028936;
+    box-shadow: 0px 1px 6px 6px rgba(2,137,54,0.2);
+    cursor: pointer;
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    transition: all 1s ease;
+}
+
+/*------------------------------------------------------------------
+  [ Alert validate ]*/
+  
+.validate-input {
+    position: relative;
+}
+  
+.alert-validate::before {
+    content: attr(data-validate);
+    position: absolute;
+    max-width: 70%;
+    background-color: #fff;
+    border: 1px solid #c80000;
+    border-radius: 2px;
+    padding: 4px 25px 4px 10px;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+    right: 2px;
+    pointer-events: none;
+  
+    font-family: Poppins-Medium;
+    color: #c80000;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: left;
+  
+    visibility: hidden;
+    opacity: 0;
+  
+    -webkit-transition: opacity 0.4s;
+    -o-transition: opacity 0.4s;
+    -moz-transition: opacity 0.4s;
+    transition: opacity 0.4s;
+}
+  
+.alert-validate::after {
+    content: "\f06a";
+    font-family: FontAwesome;
+    display: block;
+    position: absolute;
+    color: #c80000;
+    font-size: 15px;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+    right: 8px;
+    z-index: 1;
+}
+  
+.alert-validate:hover:before {
+    visibility: visible;
+    opacity: 1;
+    z-index: 1;
+}
+
+@media (max-width: 992px) {
+    .alert-validate::before {
+      visibility: visible;
+      opacity: 1;
+      z-index: 1;
+    }
+}
+
+/* SECCION AGREGADA POR LEONARDO */
+.bordes{
+    border-top: 1px grey solid;
+    display: block;
+    width: 100%;
+    font-size: 18px;
+    color: #7f8b84;
+    padding-top: 20px;
+}
+.bordes .bordes2{
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: bolder;
+    color: #495057;
+}
+
+.final{
+    border-radius: 0px 0px 7px 7px;
+    background-color:#f4f4f4;
+    padding: 20px;
+}

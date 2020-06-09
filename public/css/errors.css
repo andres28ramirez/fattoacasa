@@ -1,0 +1,22 @@
+/*MENSAJE DE ERROR EN EL FORMULARIO*/
+label.error{	/*MANIPULO EL CSS DEL LABEL QUE SE ESCRIBE CUANDO HAY UN ERROR*/
+    color: red;
+    margin-left: 2%;
+    opacity: 0.8; 
+    display: inline;
+}
+
+input.error, select.error{	/*MODIFICA LOS INPUT QUE HAYAN TENEDIO ALGUN ERROR*/
+    border: 1px solid red;
+    background: rgba(230,200,180,0.5);
+}
+
+select.error{  /*MODIFICA LOS SELECT QUE HAYAN TENEDIO ALGUN ERROR*/
+  border: 1px solid red;
+  /*background: rgba(230,200,180,0.5);*/
+}
+
+textarea.error{  /*MODIFICA LOS TEXTAREA QUE HAYAN TENEDIO ALGUN ERROR*/
+  border: 1px solid red;
+  /*background: rgba(230,200,180,0.5);*/
+} 
