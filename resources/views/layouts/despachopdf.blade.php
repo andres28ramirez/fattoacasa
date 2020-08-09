@@ -187,11 +187,15 @@
             </div>
         </div>
         <h1 style="clear: both">{{$header}}</h1>
+        <div>Usuario que generó el reporte: <strong>{{Auth::user()->name}}</strong></div>
+        @php setlocale(LC_TIME, 'spanish'); @endphp
+        <div>Fecha de Emisión: <strong>{{strftime("%d de %B del %Y")}}</strong></div><br>
+
         <div id="project">
-            <div><span>DESPACHADOR</span> {{$despacho->trabajador->nombre." ".$despacho->trabajador->apellido}}</div>
+            <div><span>DESPACHADOR</span> {{$despacho->trabajador ? $despacho->trabajador->nombre." ".$despacho->trabajador->apellido : "No posee"}}</div>
             <div><span>CLIENTE</span> {{$despacho->venta->cliente->nombre}}</div>
-            <div><span>DIRECCION</span> {{$despacho->venta->cliente->zona->nombre." - ".$despacho->venta->cliente->direccion}}</div>
-            <div><span>TELEFONO</span> {{$despacho->venta->cliente->telefono}}</div>
+            <div><span>DIRECCIÓN</span> {{$despacho->venta->cliente->zona->nombre." - ".$despacho->venta->cliente->direccion}}</div>
+            <div><span>TELÉFONO</span> {{$despacho->venta->cliente->telefono}}</div>
             <div><span>FECHA DESPACHO</span> {{$despacho->fecha}}</div>
             <div><span>INFORMACIÓN</span> {{$despacho->nota}}</div>
         </div>
@@ -210,7 +214,7 @@
             </thead>
             <tbody>
                 @foreach($datos as $row)
-                    <tr>
+                    <tr style="font-size: 9px">
                         @for($i = 1; $i <= count($titulos); $i++)
                             @if(isset($row['dato-'.$i]))  
                                 <td class="">{{$row['dato-'.$i]}}</td>
@@ -224,15 +228,15 @@
             </tr> -->
             <tr>
                 <td colspan="{{count($titulos)-1}}">SUBTOTAL</td>
-                <td class="total">{{$total}} Bs</td>
+                <td class="total">{{ number_format($total,2, ",", ".") }} Bs</td>
             </tr>
-            <tr>
+            <!-- <tr>
                 <td colspan="{{count($titulos)-1}}">IVA 16%</td>
                 <td class="total">{{$total*0.16}} Bs</td>
-            </tr>
+            </tr> -->
             <tr>
-                <td colspan="{{count($titulos)-1}}" class="grand total">TOTAL</td>
-                <td class="grand total">{{$total+$total*0.16}} Bs</td>
+                <td colspan="{{count($titulos)-1}}" class="grand total">TOTAL CON IVA</td>
+                <td class="grand total">{{ number_format($despacho->venta->monto,2, ",", ".") }} Bs</td>
             </tr>
             </tbody>
         </table>

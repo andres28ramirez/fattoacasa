@@ -1,3 +1,29 @@
+<style>
+    @media (max-width: 860px) {  
+        #singlelinechart{{ $data['canva'] }}{
+            height: 60px;
+        }
+    }
+
+    @media (max-width: 550px) {  
+        #singlelinechart{{ $data['canva'] }}{
+            height: 60px;
+        }
+    }
+
+    @media (max-width: 500px) {  
+        #singlelinechart{{ $data['canva'] }}{
+            height: 60px;
+        }
+    }
+
+    @media (max-width: 400px) {  
+        #singlelinechart{{ $data['canva'] }}{
+            height: 30px;
+        }
+    }
+</style>
+
 <div class="rounded">
     <div class="card-header py-3 d-flex">
         <h6 class="my-auto font-weight-bold float-left" style="color: #333333; letter-spacing: 1px">{{ $data['texto'] }}</h6>

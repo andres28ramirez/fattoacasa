@@ -78,4 +78,8 @@ class ReporteController extends Controller
         $report->save();
         return response()->json(true); 
     }
+
+    public function showManuals(){
+        return view('manuales.list');
+    }
 }

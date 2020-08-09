@@ -39,7 +39,6 @@
                                 id="{{ $input['id_name'] }}"
                                 name="{{ $input['form_name'] }}" 
                                 placeholder="{{ $input['placeholder'] }}"
-                                value="{{ old($input['form_name']) }}"
                                 step = "any"
                             >
                         @elseif($input['component-type']=="select")
@@ -201,5 +200,5 @@
 
 	function borrar(codigo){
 		$("#"+codigo).remove();
-	}
+    }
 </script>

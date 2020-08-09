@@ -17,9 +17,9 @@
             <a class="nav-link text-dark active font-weight-bold" href="{{ route('list-workers') }}">Empleados</a>
         </li>
     @endif
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('list-reports') }}">Reportes Generados</a>
-        </li>
+        </li> -->
     @if(Auth::user()->tipo != "operador")
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('list-system') }}">Reportes del Sistema</a>
@@ -27,7 +27,7 @@
     @endif
     @if(Auth::user()->tipo == "admin")
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración (Back-Ups)</a>
+            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración y Respaldo</a>
         </li>
     @endif
     </ul>

@@ -51,7 +51,7 @@ class MailController extends Controller
                 $report->save();
     
                 DB::commit();
-                return redirect()->url('list-cuentas')->with('status', 'Error al Almacenar la información');
+                return redirect()->url('list-cuentas')->with('status', 'Error al Enviar el Correo');
             }
     }
 }

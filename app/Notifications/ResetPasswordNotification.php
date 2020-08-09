@@ -57,7 +57,7 @@ class ResetPasswordNotification extends Notification
         if (static::$toMailCallback) {
             return call_user_func(static::$toMailCallback, $notifiable, $this->token);
         }
-
+        
         return (new MailMessage)
             ->subject(Lang::getFromJson('Reestablecimiento de contraseña'))
             ->greeting(Lang::getFromJson('Hola, '.$notifiable->name.'!'))

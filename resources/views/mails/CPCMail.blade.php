@@ -134,7 +134,8 @@
 <body>
     <header class="clearfix">
         <div id="logo">
-            <!--<img src="{{ asset('img/logo.png') }}">-->
+            <a href="https://www.upload.ee/image/12015399/logo.png"><img src="https://www.upload.ee/thumb/12015399/logo.png" border="0" alt="Logo" /></a>
+            <!-- <img src="{{ asset('img/logo.png')}}"> -->
             <div id="company">
                 <div>Fatto a Casa C.A</div>
                 <div>Calle Tamare, quinta Lina el Marques<br /> Caracas, Venezuela</div>

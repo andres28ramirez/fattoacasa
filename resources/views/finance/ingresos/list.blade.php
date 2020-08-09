@@ -16,7 +16,7 @@
             <a class="nav-link text-secondary" href="{{ route('list-gasto-costo') }}">Gastos y Costos</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Nómina</a>
+            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Personal</a>
         </li>
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('finance-pagos') }}">Pagos</a>
@@ -287,10 +287,10 @@
                 $data_content["id"] = $row->id;
                 $data_content["dato-1"] = $row->id;
                 $data_content["dato-2"] = $row->cliente->nombre;
-                $data_content["dato-3"] = $row->monto." Bs";
+                $data_content["dato-3"] = number_format($row->monto,2, ",", ".")." Bs";
                 $data_content["dato-4"] = $row->fecha;
                 $data_content["dato-5"] = $row->pago->fecha_pago;
-                $data_content["dato-6"] = $row->pago->referencia;
+                $data_content["dato-6"] = $row->pago->referencia ? $row->pago->referencia : "No posee";
 
                 array_push($data_list["content"],$data_content);
             }

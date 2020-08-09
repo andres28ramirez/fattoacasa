@@ -150,7 +150,7 @@
                     array(
                         "color-header" => "#BF6000",
                         "color-inside" => "#FF8100",
-                        "cantidad" => $venta_promedio ? round($venta_promedio->promedio, 2)." Bs" : "0 Bs",
+                        "cantidad" => $venta_promedio ? number_format($venta_promedio->promedio,2, ",", ".")." Bs" : "0 Bs",
                         "text" => "VALOR PROMEDIO DE VENTA",
                         "figure" => "fa-product-hunt",
                         "col" => "col-lg"

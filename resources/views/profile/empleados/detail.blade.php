@@ -17,9 +17,9 @@
             <a class="nav-link text-dark active font-weight-bold" href="{{ route('list-workers') }}">Empleados</a>
         </li>
     @endif
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('list-reports') }}">Reportes Generados</a>
-        </li>
+        </li> -->
     @if(Auth::user()->tipo != "operador")
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('list-system') }}">Reportes del Sistema</a>
@@ -27,7 +27,7 @@
     @endif
     @if(Auth::user()->tipo == "admin")
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración (Back-Ups)</a>
+            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración y Respaldo</a>
         </li>
     @endif
     </ul>
@@ -289,18 +289,6 @@
                 array_push($data_table_1,$data);
             }
 
-            $data_table_2 = array();
-            $data = array("id", "dato-1", "dato-2", "dato-3", "agenda-4");
-            foreach ($nomina as $pay) {
-                $data["id"] = $pay->pago->id;
-                $data["dato-1"] = $pay->pago->fecha_pago;
-                setlocale(LC_TIME, "spanish"); 
-                $data["dato-2"] = strftime("%B", strtotime($pay->mes));
-                $data["dato-3"] = $pay->monto;
-                $data["dato-4"] = $pay->pago->referencia;
-                array_push($data_table_2,$data);
-            }
-
             $data_list = array(
                 array(
                     "table-id" => "agenda-empleado",
@@ -315,20 +303,6 @@
                         "Estado",
                     ),
                     "content" => $data_table_1,
-                ),
-                array(
-                    "table-id" => "pagos-empleado",
-                    "title" => "Pagos de nómina recibidos en el año",
-                    "hide-options" => true,
-                    "icon" => "fa-money",
-                    "type" => "table",
-                    "titulos" => array(
-                        "Fecha",
-                        "Mes",
-                        "Monto",
-                        "Referencia de Pago",
-                    ),
-                    "content" => $data_table_2,
                 ),
             );
 

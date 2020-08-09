@@ -4,8 +4,12 @@ $(".download-indicator").click(function() {
     var f = new Date();
     var fecha = f.getDate() + "/" + (f.getMonth() +1) + "/" + f.getFullYear();
     var name = $('#'+canva).parent().attr("name");
-    //var logo = new Image();
-    //logo.src = $("#logo-imagen").attr("src");
+    var usuario = $('#user-text-name').text();
+
+    var logo = new Image();
+    logo.src = "http://localhost/fatto-a-casa/public/img/logo.png";
+    logo.onload;
+    console.log(logo);
 
     // get size of report page
     var reportPageHeight = $('#'+canva).height();
@@ -137,20 +141,78 @@ $(".download-indicator").click(function() {
 
     // create new pdf and add our new canvas as an image
     //var pdf = new jsPDF('l', 'pt', [reportPageWidth, reportPageHeight]);
-    //espaciado de un PDF 842 x 595
-    var pdf = new jsPDF('l', 'px', [reportPageWidth, reportPageHeight]);
+    //espaciado de un PDF 792 x 612
+    var pdf = new jsPDF('p', 'px', [792 , 612]);
     pdf.addFont('ComicSansMS', 'Comic Sans', 'normal');
     pdf.setFont('Helvetica');
+    pdf.setFontSize(12);
+
+    //pdf.line(X1,Y1,X2,Y2);
+    pdf.line(30,99,580,99);
+    pdf.setFillColor(249,246,241);
+    pdf.rect(30, 100, 550, 40, 'F');
+    pdf.line(30,140,580,140);
+    
+    pdf.setFontSize(18);
+    pdf.setTextColor(73, 80, 87);
+    xOffset = (pdf.internal.pageSize.width / 2) - (pdf.getStringUnitWidth(titulo) * pdf.internal.getFontSize() / 2) + 40;
+    pdf.text(titulo, xOffset, 125);
+    //pdf.text(20, 152,"Título: "+titulo);
+
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(12);
+    pdf.fromHTML( 'Reporte Generadó por: <b>'+usuario+'</b>', 30, 150)
+    pdf.fromHTML( 'Fecha de Emisión: <b>'+fecha+'</b>', 30, 165)
+    //pdf.text(30, 160,"Reporte Generado por: "+usuario);
+    //pdf.text(30, 175,"Fecha de Emisión: "+fecha);
     pdf.setFontSize(15);
-    pdf.text(10, 20,"Fecha de Descarga: "+fecha);
-    pdf.text(10, 40,"Título: "+titulo);
-    pdf.rect(0, 0, reportPageWidth, reportPageHeight, 'S');
-    pdf.rect(0, 0, reportPageWidth, 50, 'S'); //CUADRADO PEQUEÑO DEL TITULO
-    //pdf.line(25,55,reportPageWidth,55);
-    //logo.height = 40;
-    //pdf.addImage(logo, 'PNG', reportPageWidth/4, reportPageWidth);
-    pdf.addImage($(pdfCanvas)[0], 'PNG', reportPageWidth/4, reportPageHeight/4);
+    pdf.text(30, 210,"Gráfico del Indicador: ");
+    pdf.setDrawColor(93, 105, 117);
+    pdf.line(30,212,580,212);
+    pdf.setFontSize(12);
+
+    // APARTADO DEL LOGO JUNTO A LA INFORMACIÓN DE LA EMPRESA
+        //addImage(imageData, format, x, y, width, height, alias, compression, rotation)
+        pdf.addImage(logo, 'PNG', 30, 30, 60, 60);
+        pdf.text(100, 40,"Fatto a Casa C.A");
+        pdf.text(100, 52,"Calle Tamare, quinta Lina el Marques");
+        pdf.text(100, 64,"Caracas, Venezuela");
+        pdf.text(100, 76,"+58-212-237-7847");
+        pdf.setTextColor(93, 105, 117);
+        pdf.text(100, 88,"Infofattoacasa@gmail.com");
+    //FIN APARTADO DEL LOGO JUNTO A LA INFORMACIÓN DE LA EMPRESA
+    
+    //FOOTER
+        pdf.setDrawColor(93, 105, 117);
+        pdf.line(30,750,580,750);
+        var text = "Reporte generadó por computador y es inválido sin la firma y sellado del mismo.";
+        xOffset = (pdf.internal.pageSize.width / 2) - (pdf.getStringUnitWidth(text) * pdf.internal.getFontSize() / 2) + 50;
+        pdf.text(text, xOffset, 760);
+    //ENDFOOTER
+
+    pdf.addImage($(pdfCanvas)[0], 'PNG', 30, 230, 550, reportPageHeight);
 
     // download the pdf
     pdf.save(name+'.pdf');
+
+
+    /*VERSION VIEJA
+        // create new pdf and add our new canvas as an image
+        //var pdf = new jsPDF('l', 'pt', [reportPageWidth, reportPageHeight]);
+        //espaciado de un PDF 842 x 595
+        var pdf = new jsPDF('l', 'px', [reportPageWidth, reportPageHeight]);
+        pdf.addFont('ComicSansMS', 'Comic Sans', 'normal');
+        pdf.setFont('Helvetica');
+        pdf.setFontSize(15);
+        pdf.text(10, 20,"Fecha de Emisión: "+fecha);
+        pdf.text(10, 40,"Título: "+titulo);
+        pdf.rect(0, 0, reportPageWidth, reportPageHeight, 'S');
+        pdf.rect(0, 0, reportPageWidth, 50, 'S'); //CUADRADO PEQUEÑO DEL TITULO
+        //pdf.line(25,55,reportPageWidth,55);
+        
+        pdf.addImage($(pdfCanvas)[0], 'PNG', reportPageWidth/4, reportPageHeight/4);
+
+        // download the pdf
+        pdf.save(name+'.pdf');
+    */
 });

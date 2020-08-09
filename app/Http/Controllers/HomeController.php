@@ -11,6 +11,8 @@ use App\Venta;
 use App\Compra;
 use App\Despacho;
 use App\Calendario;
+use App\Producto;
+use App\Producto_Receta;
 
 class HomeController extends Controller
 {
@@ -66,8 +68,63 @@ class HomeController extends Controller
             $cuentas = Venta::where('pendiente',0)->orderBy('fecha', 'asc')->skip(0)->take(5)->get();
 
         //AGENDA
-        $agendas = Calendario::where('activo',0)->orderBy('start', 'asc')->skip(0)->take(3)->get();
-            
+            //$agendas = Calendario::where('activo',0)->orderBy('start', 'asc')->skip(0)->take(3)->get();
+            $agendas = Calendario::all();
+            $agenda_cliente = 0; $agenda_proveedor = 0; $agenda_trabajador = 0;
+
+            foreach($agendas as $row){
+                if($row->cliente_id)
+                    $agenda_cliente++;
+                
+                if($row->proveedor_id)
+                    $agenda_proveedor++;
+
+                if($row->trabajador_id)
+                    $agenda_trabajador++;
+            }
+        
+        //INVENTARIO PROXIMO A INEXISTENCIA
+            $id_final = Producto_Receta::select('id_producto_final')->get();
+            $prod_inventario = Producto::whereIn('id',$id_final)->get();
+            $inventario = Inventario::selectRaw('SUM(cantidad) as total, id_producto')->groupBy('id_producto')->get();
+            $datos_inventario = array();
+
+            foreach ($prod_inventario as $pro) {
+                $data_content["id"] = $pro->id;
+                $data_content["nombre"] = $pro->nombre;
+                $data_content["descripcion"] = $pro->descripcion;
+                $cantidad = 0;
+                foreach ($inventario as $row) {
+                    if($pro->id == $row->id_producto){
+                        $cantidad = $row->total;
+                        continue;
+                    }
+                }
+                $data_content["cantidad"] = $cantidad;
+                array_push($datos_inventario,$data_content);
+            }
+
+        //SUMINISTRO PROXIMO A INEXISTENCIA
+            $id_final = Producto_Receta::select('id_ingrediente')->get();
+            $prod_suministro = Producto::whereIn('id',$id_final)->get();
+            $suministro = Suministro::selectRaw('SUM(cantidad) as total, id_producto')->groupBy('id_producto')->get();
+            $datos_suministro = array();
+
+            foreach ($prod_suministro as $pro) {
+                $data["id"] = $pro->id;
+                $data["nombre"] = $pro->nombre;
+                $data["descripcion"] = $pro->descripcion;
+                $cantidad = 0;
+                foreach ($suministro as $row) {
+                    if($pro->id == $row->id_producto){
+                        $cantidad = $row->total;
+                        continue;
+                    }
+                }
+                $data["cantidad"] = $cantidad;
+                array_push($datos_suministro,$data);
+            }
+
 
         return view('home', [
             'clientes' => $clientes,
@@ -78,7 +135,11 @@ class HomeController extends Controller
             'compras_data' => $compras_data,
             'despachos' => $despachos,
             'cuentas' => $cuentas,
-            'agendas' => $agendas,
+            'agenda_cliente' => $agenda_cliente,
+            'agenda_proveedor' => $agenda_proveedor,
+            'agenda_trabajador' => $agenda_trabajador,
+            'd_inventario' => $datos_inventario,
+            'd_suministro' => $datos_suministro,
         ]);
     }
 

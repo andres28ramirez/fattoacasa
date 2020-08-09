@@ -266,7 +266,7 @@
                     array(
                         "color-header" => "#014A1D",
                         "color-inside" => "#028936",
-                        "cantidad" => $compra_promedio ? round($compra_promedio->promedio, 2)." Bs" : "0 Bs",
+                        "cantidad" => $compra_promedio ? number_format($compra_promedio->promedio,2, ",", ".")." Bs" : "0 Bs",
                         "text" => "VALOR PROMEDIO DE COMPRA",
                         "figure" => "fa-product-hunt",
                         "col" => "col-lg-12"

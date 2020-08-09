@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth; //Nuevo
 use Illuminate\Support\Facades\Response as FacadeResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -14,9 +15,14 @@ use App\Despacho;
 use App\Incidencia;
 use App\Reporte;
 use App\Calendario;
+use App\Egreso;
+use App\Suministro; //Nuevo
+use App\Inventario; //Nuevo
+use App\Venta; //Nuevo
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 
 class UsuarioController extends Controller
 {   
@@ -45,10 +51,94 @@ class UsuarioController extends Controller
             // log the results
             Log::info("Backpack\BackupManager -- new backup started from admin interface \r\n" . $output);
             // return the results as a response to the ajax call
-            return redirect()->back()->with('message', 'Nueva copia de seguridad creada');
+            return redirect()->back()->with('message', 'Nueva copia de seguridad creada!');
         }catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('status', "Error al crear la copia de seguridad");
         }
+    }
+
+    public function restoreBackup(Request $request){
+        //Forma de eliminar la BD (funciona)
+        //Schema::getConnection()->getDoctrineSchemaManager()->dropDatabase("manual_fatto");
+
+        //Forma para crear la BD (no funciona ya que elimino lo de arriba)
+        //DB::getConnection()->statement('CREATE DATABASE :schema', array('schema' => "manual_fatto"));
+
+        //Schema es la forma con laravel para eliminar las tablas
+        $file_path = $request->file('form_file');
+        if($file_path){
+            //Deshabilitar las llaves foraneas
+            Schema::disableForeignKeyConstraints();
+            //Tablas
+                Schema::dropIfExists('calendario');
+                Schema::dropIfExists('categoria');
+                Schema::dropIfExists('cliente');
+                Schema::dropIfExists('compra');
+                Schema::dropIfExists('despacho');
+                Schema::dropIfExists('desperdicio');
+                Schema::dropIfExists('egreso');
+                Schema::dropIfExists('gasto_costo');
+                Schema::dropIfExists('incidencia');
+                Schema::dropIfExists('indicador');
+                Schema::dropIfExists('inventario');
+                Schema::dropIfExists('migrations');
+                Schema::dropIfExists('orden_producto');
+                Schema::dropIfExists('pago');
+                Schema::dropIfExists('pago_nomina');
+                Schema::dropIfExists('password_resets');
+                Schema::dropIfExists('producto');
+                Schema::dropIfExists('producto_receta');
+                Schema::dropIfExists('proveedor');
+                Schema::dropIfExists('reporte');
+                Schema::dropIfExists('suministro');
+                Schema::dropIfExists('trabajador');
+                Schema::dropIfExists('users');
+                Schema::dropIfExists('venta');
+                Schema::dropIfExists('zona');
+            //Habilitar las llaves foraneas
+            Schema::enableForeignKeyConstraints();
+
+            //Restauración de la Base de Datos
+            // Variable temporal que lleva la query actual
+            $templine = '';
+            
+            // Cada linea dentro del archivo .sql
+            $lines = file($file_path);
+            
+            $error = '';
+            
+            // Loop through each line
+            foreach ($lines as $line){
+                // Skip it if it's a comment
+                if(substr($line, 0, 2) == '--' || $line == ''){
+                    continue;
+                }
+                
+                // Add this line to the current segment
+                $templine .= $line;
+                
+                // If it has a semicolon at the end, it's the end of the query
+                if (substr(trim($line), -1, 1) == ';'){
+                    // Perform the query
+                    if(!DB::unprepared($templine)){
+                        $error .= 'Error performing query "<b>' . $templine . '</b>"';
+                    }
+                    
+                    // Reset temp variable to empty
+                    $templine = '';
+                }
+            }
+            //return !empty($error)?$error:true;
+
+            $message = "Base de Datos fue restaurada correctamente\n ".$error;
+            //Nuevo para que me acomode las notificaciones
+            $this->notifications();
+        }
+        else
+            $message = "Base de Datos no pudo ser restaurada";
+
+        //Redirección:
+        return redirect()->back()->with('message', $message);
     }
 
     public function saveUser(Request $request)
@@ -71,7 +161,7 @@ class UsuarioController extends Controller
             $p_logistica            = $request->input('check-log');
             $p_compra_venta         = $request->input('check-cv');
             $p_finanzas             = $request->input('check-fin');
-            $p_clientes_proveedores = $request->input('check-cps');
+            $p_clientes_proveedores = $request->input('check-cp');
 
             $user = new User();
             $user->name     = $name;
@@ -102,7 +192,7 @@ class UsuarioController extends Controller
             $report->save();
             
             DB::commit();
-            return redirect()->route('list-users')->with('message', 'Usuario añadido correctamente');
+            return redirect()->route('list-users')->with('message', 'Usuario añadido exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -168,7 +258,7 @@ class UsuarioController extends Controller
             $report->save();
             
             DB::commit();
-            return redirect()->route('list-workers')->with('message', 'Trabajador añadido correctamente');
+            return redirect()->route('list-workers')->with('message', 'Trabajador añadido exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -376,6 +466,9 @@ class UsuarioController extends Controller
         //valido que si llega un operador lo hecho para atras
         if($user->tipo == "operador")
             return redirect()->route('home');
+        
+        if($id==1)
+            return redirect()->route('home');
 
         //$id va ser el id del usuario
         $user = User::find($id);
@@ -404,7 +497,7 @@ class UsuarioController extends Controller
         $worker = Trabajador::find($id);
 
         //Pagos del años actual del empleado
-        $nomina = Pago_Nomina::where('id_trabajador', $id)->whereYear('mes', date("Y"))->get();
+        //$nomina = Pago_Nomina::where('id_trabajador', $id)->whereYear('mes', date("Y"))->get();
 
         //recojo los eventos donde aparece el cliente
         $eventos = Calendario::where('trabajador_id',$id)->orderBy('start', 'asc')->get();
@@ -415,7 +508,7 @@ class UsuarioController extends Controller
 
         return view('profile.empleados.detail', [
             'worker' => $worker,
-            'nomina' => $nomina,
+            //'nomina' => $nomina,
             'eventos' => $eventos,
         ]);
     }
@@ -431,13 +524,13 @@ class UsuarioController extends Controller
             $validate = $this->validate($request, [
                 'name' => 'required|string|max:255',
                 'username' => 'required|string|max:255|unique:users,username,'.$id,
-                'correo' => 'required|string|email|max:255|unique:cliente,correo,'.$id,
+                'email' => 'required|string|email|max:255|unique:users,email,'.$id,
                 'password' => 'required|string|max:255|unique:users,password,'.$id,
             ]);
             
             $name     = $request->input('name');
             $username = $request->input('username');
-            $email    = $request->input('correo');
+            $email    = $request->input('email');
             $password = $request->input('password');
             $password = $user->password == $password ? $password : Hash::make($password);
             
@@ -451,7 +544,7 @@ class UsuarioController extends Controller
             $user->update();
 
             DB::commit();
-            return redirect()->route('perfil')->with('message', 'Perfil Editado Correctamente');
+            return redirect()->route('perfil')->with('message', 'Perfil Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             DB::rollback();
             return redirect()->route('perfil')->with('status', 'Error al Editar la información');
@@ -515,7 +608,7 @@ class UsuarioController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-user', ['id' => $id])->with('message', 'Usuario Editado Correctamente');
+            return redirect()->route('detail-user', ['id' => $id])->with('message', 'Usuario Editado Exitosamente');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -586,7 +679,7 @@ class UsuarioController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-worker', ['id' => $id])->with('message', 'Trabajador Editado Correctamente');
+            return redirect()->route('detail-worker', ['id' => $id])->with('message', 'Trabajador Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -670,7 +763,8 @@ class UsuarioController extends Controller
             foreach ($id as &$valor) {
                 $worker = Trabajador::find($valor);
                 $despacho = Despacho::where('id_trabajador',$valor)->get();
-                $agenda = Calendario::where('id_trabajador',$valor)->get();
+                $agenda = Calendario::where('trabajador_id',$valor)->get();
+                //$pago_nomina = Pago_Nomina::where('id_trabajador',$valor)->get();
 
                 //Eliminar agenda de empleado
                 if($agenda && count($agenda)>=1){
@@ -683,9 +777,22 @@ class UsuarioController extends Controller
                 //Eliminar Despachos Asociados al trabajador
                 if($despacho && count($despacho)>=1){
                     foreach ($despacho as $row) {
-                        $row->delete();
+                        $row->id_trabajador = null;
+                        $row->update();
                     }
                 }
+
+                //Eliminar Pagos de Nómina
+                /* if($pago_nomina && count($pago_nomina)>=1){
+                    foreach ($pago_nomina as $row) {
+                        //AQUI DEBO DECIDIR SI ELIMINAR EL PAGO O SOLO LE PONGO QUE EL EMPLEADO YA NO EXISTE
+                        //Elimino el egreso que tiene asociado el pago de nomina
+                        $pago_egreso = Egreso::where('id_pago_nomina',$row->id)->first();
+                        $pago_egreso->delete();
+                        //Elimino pago de nomina de la persona
+                        $row->delete();
+                    }
+                } */
 
                 $codigo = $worker->id;
                 //Elimino trabajador
@@ -864,7 +971,7 @@ class UsuarioController extends Controller
 
         $filtro == "" ? $filtro = "Todos los trabajadores" : "";
         $datos = array();
-        $titulos = array('Nombre', 'Cedula', 'Teléfono', 'Tipo de Empleado', 'Banco', 'Nro. de Cuenta');
+        $titulos = array('Nombre', 'Cédula', 'Teléfono', 'Tipo de Empleado', 'Banco', 'Nro. de Cuenta');
 
         foreach ($trabajadores as $worker) {
             $data_content["dato-1"] = $worker->nombre." ".$worker->apellido;
@@ -963,5 +1070,75 @@ class UsuarioController extends Controller
         }
  
         return "Hace " . $result;
+    }
+
+    //Nuevo para que acomode las notificaciones
+    public function notifications()
+    {
+        $total = 0;
+
+        if(Auth::user()->permiso_venta){
+            //Acomodamos Cuentas por Cobrar
+            $ventas = Venta::where('pendiente',0)->get();
+            $expirar = 0; $caducar = 0;
+            foreach ($ventas as $sell) {
+                if( strtotime($sell->fecha."+ ".$sell->credito." days") - strtotime(date("d-m-Y")) <= 3*86400){
+                    if( strtotime($sell->fecha."+ ".$sell->credito." days") - strtotime(date("d-m-Y")) > 0*86400){
+                        $expirar++;
+                        $total++;
+                    }
+                    else{
+                        $caducar++;
+                        $total++;
+                    }
+                }
+            }
+            session()->put('cobrar-expirar', $expirar);
+            session()->put('cobrar-caducar', $caducar);
+        }
+
+        if(Auth::user()->permiso_logistica){
+            //Acomodamos Inventario por expirar
+            $inventario = Inventario::all();
+            $expirar = 0; $caducar = 0;
+            foreach ($inventario as $product) {
+                if($product->expedicion){
+                    if( strtotime($product->expedicion) - strtotime(date("d-m-Y")) < 3*86400){
+                        if( strtotime($product->expedicion) - strtotime(date("d-m-Y")) > 0*86400){
+                            $expirar++;
+                            $total++;
+                        }
+                        else{
+                            $caducar++;
+                            $total++;
+                        }
+                    }
+                }
+            }
+            session()->put('inventario-expirar', $expirar);
+            session()->put('inventario-caducar', $caducar);
+
+            //Acomodamos Suministro por expirar
+            $suministro = Suministro::all();
+            $expirar = 0; $caducar = 0;
+            foreach ($suministro as $product) {
+                if($product->expedicion){
+                    if( strtotime($product->expedicion) - strtotime(date("d-m-Y")) < 3*86400){
+                        if( strtotime($product->expedicion) - strtotime(date("d-m-Y")) > 0*86400){
+                            $expirar++;
+                            $total++;
+                        }
+                        else{
+                            $caducar++;
+                            $total++;
+                        }
+                    }
+                }
+            }
+            session()->put('suministro-expirar', $expirar);
+            session()->put('suministro-caducar', $caducar);
+        }
+
+        session()->put('notificaciones', $total);
     }
 }

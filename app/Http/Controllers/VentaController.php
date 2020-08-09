@@ -8,6 +8,7 @@ use App\Incidencia;
 use App\Venta;
 use App\Orden_Producto;
 use App\Producto;
+use App\Producto_Receta;
 use App\Despacho;
 use App\Inventario;
 use App\Cliente;
@@ -26,7 +27,7 @@ class VentaController extends Controller
     public function createVenta()
     {
         $clients = Cliente::all();
-        $products = Inventario::all();
+        $products = Inventario::groupBy('id_producto')->get();
 
         return view('ventas.add', [
             'clients' => $clients,
@@ -43,12 +44,14 @@ class VentaController extends Controller
                 'fecha' => 'required',
                 'id_cliente' => 'required',
                 'monto' => 'required|numeric',
+                'nota' => 'required|string|max:255',
             ]);
 
             $credito    = $request->input('credito');
             $fecha      = $request->input('fecha');
             $id_cliente = $request->input('id_cliente');
             $monto      = $request->input('monto');
+            $nota       = $request->input('nota');
             $pendiente  = false;
             
             //Asignar los valores al nuevo objeto de compra
@@ -57,23 +60,37 @@ class VentaController extends Controller
             $venta->fecha      = $fecha;
             $venta->monto      = $monto;
             $venta->credito    = $credito;
+            $venta->nota       = $nota;
             $venta->pendiente  = $pendiente;
-            $venta->id_pago      = null;
+            $venta->id_pago    = null;
 
             //Revisamos si llego pago y de ser asi lo grabamos
             $banco      = $request->input('banco');
             $referencia = $request->input('referencia');
             $fecha_pago = $request->input('fecha_pago');
-            if($banco && $referencia && $fecha_pago){
-                $validate = $this->validate($request, [
-                    'banco' => 'required|string',
-                    'fecha_pago' => 'required|string',
-                    'referencia' => 'required|string|max:255|unique:pago',
-                ]);
+            $nota_pago = $request->input('nota_pago');
+            if($banco && $fecha_pago && $nota_pago){
+                if($referencia){
+                    $validate = $this->validate($request, [
+                        'banco' => 'required|string',
+                        'fecha_pago' => 'required|string',
+                        'referencia' => 'string|max:255|unique:pago',
+                        'nota_pago' => 'required|string|max:255',
+                    ]);
+                }
+                else{
+                    $validate = $this->validate($request, [
+                        'banco' => 'required|string',
+                        'fecha_pago' => 'required|string',
+                        'nota_pago' => 'required|string|max:255',
+                    ]);
+                    $referencia = null;
+                }
                 $pago = new Pago();
                 $pago->banco      = $banco;
                 $pago->referencia = $referencia;
                 $pago->fecha_pago = $fecha_pago;
+                $pago->nota_pago  = $nota_pago;
                 $pago->save();
                 
                 $venta->pendiente = true;
@@ -154,7 +171,11 @@ class VentaController extends Controller
                 if(!$venta->pendiente)
                     $this->resetNotification($venta,'save');
 
-                //GRABAR EL REPORTE DE GUARDADO EXITOSO
+                //Arreglo las notificaciones de inventario
+                    //Nuevo para que me acomode las notificaciones
+                    $this->notifications();
+                
+                    //GRABAR EL REPORTE DE GUARDADO EXITOSO
                 //Conseguimos el id del usuario
                 $user = \Auth::user();
                 $id   = $user->id;
@@ -170,7 +191,7 @@ class VentaController extends Controller
                 $report->save();
 
                 DB::commit();
-                return redirect()->route('list-ventas')->with('message', 'Venta Subida Correctamente');
+                return redirect()->route('list-ventas')->with('message', 'Venta añadida Exitosamente!');
             }
             else{
                 DB::rollback();
@@ -200,16 +221,28 @@ class VentaController extends Controller
         try{
             //id de la venta
             $id_venta = $request->input('id');
+            $referencia = $request->input('referencia');
 
-            $validate = $this->validate($request, [
-                'banco' => 'required|string',
-                'fecha_pago' => 'required|string',
-                'referencia' => 'required|string|max:255|unique:pago',
-            ]);
+            if($referencia){
+                $validate = $this->validate($request, [
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'referencia' => 'string|max:255|unique:pago',
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+            }
+            else{
+                $validate = $this->validate($request, [
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+                $referencia = null;
+            }
 
             $banco      = $request->input('banco');
-            $referencia = $request->input('referencia');
             $fecha_pago = $request->input('fecha_pago');
+            $nota_pago  = $request->input('nota_pago');
             
             //Buscamos la compra correspondiente al pago
             $venta = Venta::find($id_venta);
@@ -218,6 +251,7 @@ class VentaController extends Controller
             $pago->banco      = $banco;
             $pago->referencia = $referencia;
             $pago->fecha_pago = $fecha_pago;
+            $pago->nota_pago  = $nota_pago;
             $pago->save();
             
             $venta->pendiente = true;
@@ -225,6 +259,9 @@ class VentaController extends Controller
             
             //Grabamos el pago en la venta a traves de un update
             $venta->update();
+
+            //Acomodamos las notificaciones
+                $this->resetNotification($venta, 'delete');
             
             //GRABAR EL REPORTE DE GUARDADO EXITOSO
             //Conseguimos el id del usuario
@@ -516,7 +553,10 @@ class VentaController extends Controller
 
         if($id && $referencia && $banco && $tiempo){
             if($tiempo!="todos"){//FILTRO CON TODO LO QUE MANDEN MAS FECHA
-                $datos = Pago::select('id')->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                $datos = Pago::select('id')->where(function($q) use ($referencia) {
+                                                $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                                ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                            })->
                                             where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                             whereBetween('fecha_pago', [$fecha_1, $fecha_2])->get();
 
@@ -526,7 +566,10 @@ class VentaController extends Controller
                                     orderBy($order, 'desc')->paginate($registros);
             }
             else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
-                $datos = Pago::select('id')->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                $datos = Pago::select('id')->where(function($q) use ($referencia) {
+                                                $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                                ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                            })->
                                             where('banco','like',$banco == "todos" ? "%%" : $banco)->get();
 
                 $ventas = Venta::where('id_pago','!=',null)->
@@ -552,6 +595,49 @@ class VentaController extends Controller
         ]);
     }
 
+    public function showDescartadas($registros = 10, $id = null, $persona = null, $estado = null, $tiempo = null, 
+                                $fecha_1 = null, $fecha_2 = null, $order = 'id')
+    {
+        //compruebo que el orden no sea distintas a las opciones que puede tomar sino, le impongo que sea ID
+        if($order!="id" && $order!="id_cliente" && $order!="monto" && $order!="fecha" && $order!="credito" && $order!="pendiente")
+            $order = "id";
+
+        if($id && $persona && $tiempo){
+            if($tiempo!="todos"){//FILTRO CON TODO LO QUE MANDEN MAS FECHA
+                $ventas = Venta::onlyTrashed()->where('id', 'like', $id == "todos" ? "%%" : $id)->
+                                    where('pendiente','like', $estado == "todos" ? "%%" : $estado)->
+                                    where('id_cliente','like', $persona == "todos" ? "%%" : $persona)->
+                                    whereBetween('fecha', [$fecha_1, $fecha_2])->
+                                    orderBy($order, 'desc')->paginate($registros);
+            }
+            else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
+                $ventas = Venta::onlyTrashed()->where('id', 'like', $id == "todos" ? "%%" : $id)->
+                                    where('pendiente','like', $estado == "todos" ? "%%" : $estado)->
+                                    where('id_cliente','like', $persona == "todos" ? "%%" : $persona)->
+                                    orderBy($order, 'desc')->paginate($registros);
+            }
+        }
+        else{
+            $ventas = Venta::onlyTrashed()->orderBy($order, 'desc')->paginate($registros);
+        }
+
+        //Para filtrar por cliente
+        $clientes = Cliente::all();
+
+        return view('ventas.descartadas.list', [
+            'ventas' => $ventas,
+            'registros' => $registros,
+            'order' => $order,
+            'id' => $id,
+            'persona' => $persona,
+            'estado' => $estado,
+            'tiempo' => $tiempo,
+            'fecha_1' => $fecha_1,
+            'fecha_2' => $fecha_2,
+            'clientes' => $clientes,
+        ]);
+    }
+
     public function detailVenta($id = null)
     {
         //$id va ser el id de la venta que deseo
@@ -563,6 +649,11 @@ class VentaController extends Controller
         //recojo todos los productos de la venta
         $productos = Orden_Producto::where('id_venta',$id)->get();
 
+        //Para colocar el listado de productos para acomodar la orden
+        $pr_final = Producto_Receta::select('id_producto_final')->get();
+
+        $orden_productos = Producto::whereIn('id',$pr_final)->get();
+
         if(empty($id) || empty($venta))
         return redirect()->route('list-ventas');
 
@@ -570,6 +661,7 @@ class VentaController extends Controller
             'venta' => $venta,
             'clients' => $clients,
             'productos' => $productos,
+            'orden_productos' => $orden_productos,
         ]);
     }
 
@@ -625,11 +717,13 @@ class VentaController extends Controller
                 'credito' => 'required|numeric',
                 'fecha' => 'required',
                 'id_cliente' => 'required',
+                'nota' => 'required|string|max:255',
             ]);
 
             $credito      = $request->input('credito');
             $fecha        = $request->input('fecha');
-            $id_cliente = $request->input('id_cliente');
+            $id_cliente   = $request->input('id_cliente');
+            $nota         = $request->input('nota');
             
             //Asignar los valores al nuevo objeto de compra y ubicamos los suministros
             $venta = Venta::find($id);
@@ -637,31 +731,56 @@ class VentaController extends Controller
             $venta->id_cliente   = $id_cliente;
             $venta->fecha        = $fecha;
             $venta->credito      = $credito;
+            $venta->nota         = $nota;
 
             //Revisamos si llego pago y de ser asi lo grabamos
             $banco      = $request->input('banco');
             $referencia = $request->input('referencia');
             $fecha_pago = $request->input('fecha_pago');
-            if($banco && $referencia && $fecha_pago){
+            $nota_pago  = $request->input('nota_pago');
+            if($banco && $fecha_pago && $nota_pago){
                 if($venta->pago){
-                    $validate = $this->validate($request, [
-                        'banco' => 'required|string',
-                        'fecha_pago' => 'required|string',
-                        'referencia' => 'required|string|max:255|unique:pago,referencia,'.$venta->pago->id,
-                    ]);
+                    if($referencia){
+                        $validate = $this->validate($request, [
+                            'banco' => 'required|string',
+                            'fecha_pago' => 'required|string',
+                            'referencia' => 'required|string|max:255|unique:pago,referencia,'.$venta->pago->id,
+                            'nota_pago' => 'required|string|max:255',
+                        ]);
+                    }
+                    else{
+                        $validate = $this->validate($request, [
+                            'banco' => 'required|string',
+                            'fecha_pago' => 'required|string',
+                            'nota_pago' => 'required|string|max:255',
+                        ]);
+                        $referencia = null;
+                    }
                 }
                 else{
-                    $validate = $this->validate($request, [
-                        'banco' => 'required|string',
-                        'fecha_pago' => 'required|string',
-                        'referencia' => 'required|string|max:255|unique:pago',
-                    ]);
+                    if($referencia){
+                        $validate = $this->validate($request, [
+                            'banco' => 'required|string',
+                            'fecha_pago' => 'required|string',
+                            'referencia' => 'string|max:255|unique:pago',
+                            'nota_pago' => 'required|string|max:255',
+                        ]);
+                    }
+                    else{
+                        $validate = $this->validate($request, [
+                            'banco' => 'required|string',
+                            'fecha_pago' => 'required|string',
+                            'nota_pago' => 'required|string|max:255',
+                        ]);
+                        $referencia = null;
+                    }
                 }
                 //reviso si existe pago asociado
                 $venta->pago ? $pago = Pago::find($venta->id_pago) : $pago = new Pago();
                 $pago->banco      = $banco;
                 $pago->referencia = $referencia;
                 $pago->fecha_pago = $fecha_pago;
+                $pago->nota_pago  = $nota_pago;
 
                 //vuelvo a revisar a ver si hago save o update
                 $venta->pago ? $pago->update() : $pago->save();
@@ -692,7 +811,7 @@ class VentaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-venta', ['id' => $venta->id])->with('message', 'Venta Editada Correctamente');
+            return redirect()->route('detail-venta', ['id' => $venta->id])->with('message', 'Venta Editada Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -717,15 +836,27 @@ class VentaController extends Controller
         try{
             //id del pago
             $id = $request->input('id');
+            $referencia = $request->input('referencia');
             
-            $validate = $this->validate($request, [
-                'banco' => 'required|string',
-                'fecha_pago' => 'required|string',
-                'referencia' => 'required|string|max:255|unique:pago,referencia,'.$id,
-            ]);
+            if($referencia){
+                $validate = $this->validate($request, [
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'referencia' => 'required|string|max:255|unique:pago,referencia,'.$id,
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+            }
+            else{
+                $validate = $this->validate($request, [
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+                $referencia = null;
+            }
             
             $banco      = $request->input('banco');
-            $referencia = $request->input('referencia');
+            $nota_pago  = $request->input('nota_pago');
             $fecha_pago = $request->input('fecha_pago');
             
             //obtenemos el objeto del pago para hacerle el update
@@ -733,6 +864,7 @@ class VentaController extends Controller
             $pago->banco      = $banco;
             $pago->referencia = $referencia;
             $pago->fecha_pago = $fecha_pago;
+            $pago->nota_pago  = $nota_pago;
 
             //grabo el update del pago
             $pago->update();
@@ -755,7 +887,7 @@ class VentaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('venta-pago', ['id' => $pago->id])->with('message', 'Pago Editado Correctamente');
+            return redirect()->route('venta-pago', ['id' => $pago->id])->with('message', 'Pago Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -815,7 +947,7 @@ class VentaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-despacho', ['id' => $despacho->id])->with('message', 'Despacho Editado Correctamente');
+            return redirect()->route('detail-despacho', ['id' => $despacho->id])->with('message', 'Despacho Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -834,6 +966,75 @@ class VentaController extends Controller
         }
     }
 
+    public function updateOrden(Request $request)
+    {
+        DB::beginTransaction();
+        try{
+            //id y nuevo monto de venta
+            $id_venta = $request->input('vc_id');
+            $monto = $request->input('vc_monto');
+
+            //ACOMODAMOS EL MONTO DE LA VENTA
+            $venta = Venta::find($id_venta);
+            $venta->monto = $monto;
+            $venta->update();
+
+            //ELIMINAMOS TODA LA ORDEN PRIMERO
+            Orden_Producto::where('id_venta', $id_venta)->delete();
+
+            //GRABAMOS LOS PRODUCTOS DE LA VENTA EN LA ORDEN
+            for ($i = 1; $i <= 30; $i++) {
+                if($request->has('form-producto-'.$i)){
+                    //RECOJEMOS VALORES
+                    $id_producto      = $request->input('form-producto-'.$i);
+                    $cantidad         = $request->input('form-cantidad-'.$i);
+                    $precio           = $request->input('form-price-'.$i);
+
+                    //ORDEN
+                    $orden = new Orden_Producto();
+                    $orden->id_venta    = $id_venta;
+                    $orden->id_compra   = null;
+                    $orden->id_producto = $id_producto;
+                    $orden->cantidad    = $cantidad;
+                    $orden->precio      = $precio;
+                    $orden->save();
+                }
+            }
+
+            //Grabamos ahora el reporte de la edicion del producto
+            //Conseguimos el usuario
+            $user = \Auth::user();
+
+            //Asignar los valores al nuevo objeto de reporte
+            $report = new Incidencia();
+            $report->id_user     = $user->id;
+            $report->name        = $user->name;
+            $report->activity    = "Módulo Ventas";
+            $report->description = "Orden Editada - Código de Venta (".$id_venta.")";
+
+            //Grabamos el reporte de almacenamiento en el sistema
+            $report->save();
+
+            DB::commit();
+            return redirect()->route('detail-venta', ['id' => $id_venta])->with('message', 'Orden Editada Exitosamente!');
+        }catch (\Illuminate\Database\QueryException $e){
+            //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
+            //Asignar los valores al nuevo objeto de reporte
+            DB::rollback();
+            $report = new Incidencia();
+            $report->id_user     = null;
+            $report->name        = "Error del Sistema";
+            $report->activity    = "Módulo Ventas";
+            $report->description = "Error al editar orden - Código SQL [".$e->getCode()."]";
+
+            //Grabamos el reporte de error en el sistema
+            $report->save();
+
+            DB::commit();
+            return redirect()->route('list-ventas')->with('status', 'Error al Editar la información');
+        }
+    }
+
     public function deleteVenta(Request $request){
         $id = json_decode($request->input('values'));
         $valores = array();
@@ -841,11 +1042,11 @@ class VentaController extends Controller
         try{
             foreach ($id as &$valor) {
                 $venta = Venta::find($valor);
-                $despacho = Despacho::where('id_venta',$valor)->first();
-                $orden = Orden_Producto::where('id_venta',$valor)->get();
+                //$despacho = Despacho::where('id_venta',$valor)->first();
+                //$orden = Orden_Producto::where('id_venta',$valor)->get();
                 
                 //Eliminar Orden
-                if($orden && count($orden)>=1){
+                /* if($orden && count($orden)>=1){
                     foreach ($orden as $row) {
                         //Elimino cada producto de la orden
                         $row->delete();
@@ -854,17 +1055,17 @@ class VentaController extends Controller
 
                 //Eliminar Despacho
                 if($despacho)
-                    $despacho->delete();
+                    $despacho->delete(); */
 
                 $codigo = $venta->id;
                 //Elimino venta
                 $venta->delete();
 
                 //Eliminar Pago
-                if($venta->id_pago){
+                /* if($venta->id_pago){
                     $pago = Pago::find($venta->id_pago);
                     $pago->delete();
-                }
+                } */
 
                 array_push($valores, $valor);
 
@@ -936,6 +1137,57 @@ class VentaController extends Controller
         }
     }
 
+    public function reintegrarVenta($id = null){
+        //$id va ser el id de la venta que deseo
+        $venta = Venta::onlyTrashed()->where('id', $id)->first();
+
+        if(empty($id) || empty($venta))
+        return redirect()->route('discard-ventas');
+
+        DB::beginTransaction();
+        try{
+            //ACOMODAMOS LA VENTA LA REINTEGRAMOS
+            $venta->restore();
+
+            //ACOMODAMOS LA NOTIFICACION
+            //Arreglo la variable session de cuentas por cobrar
+            if(!$venta->pendiente)
+                $this->resetNotification($venta,'save');
+
+            //Grabamos ahora el reporte de la edicion del producto
+            //Conseguimos el usuario
+            $user = \Auth::user();
+
+            //Asignar los valores al nuevo objeto de reporte
+            $report = new Incidencia();
+            $report->id_user     = $user->id;
+            $report->name        = $user->name;
+            $report->activity    = "Módulo Ventas";
+            $report->description = "Venta Anexada Nuevamente - Código (".$venta->id.")";
+
+            //Grabamos el reporte de almacenamiento en el sistema
+            $report->save();
+
+            DB::commit();
+            return redirect()->route('list-ventas')->with('message', 'Venta reintegrada Exitosamente!');
+        }catch (\Illuminate\Database\QueryException $e){
+            //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
+            //Asignar los valores al nuevo objeto de reporte
+            DB::rollback();
+            $report = new Incidencia();
+            $report->id_user     = null;
+            $report->name        = "Error del Sistema";
+            $report->activity    = "Módulo Ventas";
+            $report->description = "Error al reintegrar venta - Código SQL [".$e->getCode()."]";
+
+            //Grabamos el reporte de error en el sistema
+            $report->save();
+
+            DB::commit();
+            return redirect()->route('discard-ventas')->with('status', 'Error al reintegrar Venta');
+        }
+    }
+
     public function resetNotification($sell, $metodo){
         $total = session()->get('notificaciones');
         $expirar = session()->get('cobrar-expirar');
@@ -995,6 +1247,42 @@ class VentaController extends Controller
         session()->put('notificaciones', $total);
     }
 
+    //Nuevo para que acomode las notificaciones
+    public function notifications()
+    {
+        $total = 0;
+
+        if(\Auth::user()->permiso_logistica){
+            //Acomodamos Inventario por expirar
+            $inventario = Inventario::all();
+            $expirar = 0; $caducar = 0;
+            foreach ($inventario as $product) {
+                if($product->expedicion){
+                    if( strtotime($product->expedicion) - strtotime(date("d-m-Y")) < 3*86400){
+                        if( strtotime($product->expedicion) - strtotime(date("d-m-Y")) > 0*86400){
+                            $expirar++;
+                            $total++;
+                        }
+                        else{
+                            $caducar++;
+                            $total++;
+                        }
+                    }
+                }
+            }
+            session()->put('inventario-expirar', $expirar);
+            session()->put('inventario-caducar', $caducar);
+        }
+        $cuenta_expirar = session()->get('cobrar-expirar');
+        $cuenta_caducar = session()->get('cobrar-caducar');
+
+        $suministro_expirar = session()->get('suministro-expirar');
+        $suministro_caducar = session()->get('suministro-caducar');
+        
+        $total_final = $cuenta_expirar + $cuenta_caducar + $suministro_expirar + $suministro_caducar + $total;
+        session()->put('notificaciones', $total_final);
+    }
+
     public function downloadVenta($id = null, $persona = null, $estado = null, $tiempo = null, $fecha_1 = null, $fecha_2 = null){
         if($id && $persona && $tiempo){
             $filtro = "";
@@ -1028,7 +1316,7 @@ class VentaController extends Controller
         foreach ($ventas as $sell) {
             $data_content["dato-1"] = $sell->id;
             $data_content["dato-2"] = $sell->cliente->nombre;
-            $data_content["dato-3"] = $sell->monto." Bs";
+            $data_content["dato-3"] = number_format($sell->monto,2, ",", ".")." Bs";
             $data_content["dato-4"] = $sell->fecha;
             $data_content["dato-5"] = $sell->credito." días";
             if(!$sell->pendiente){
@@ -1089,7 +1377,7 @@ class VentaController extends Controller
             $data_content["id"] = $sell->id;
             $data_content["dato-1"] = $sell->id;
             $data_content["dato-2"] = $sell->cliente->nombre;
-            $data_content["dato-3"] = $sell->monto." Bs";
+            $data_content["dato-3"] = number_format($sell->monto,2, ",", ".")." Bs";
             $data_content["dato-4"] = $sell->fecha;
             $data_content["dato-5"] = $sell->credito." días";
 
@@ -1150,13 +1438,15 @@ class VentaController extends Controller
         $titulos = array('Código de Venta', 'Cliente', 'Monto', 'Fecha Despacho', 'Despachador', 'Estado');
 
         foreach ($despachos as $despacho) {
-            $data_content["dato-1"] = $despacho->id_venta;
-            $data_content["dato-2"] = $despacho->venta->cliente->nombre;
-            $data_content["dato-3"] = $despacho->venta->monto." Bs";
-            $data_content["dato-4"] = $despacho->fecha;
-            $data_content["dato-5"] = $despacho->trabajador->nombre." ".$despacho->trabajador->apellido;
-            $data_content["dato-6"] = $despacho->entregado ? "Finalizado" : "Pendiente";
-            array_push($datos,$data_content);
+            if($despacho->venta){
+                $data_content["dato-1"] = $despacho->id_venta;
+                $data_content["dato-2"] = $despacho->venta->cliente->nombre;
+                $data_content["dato-3"] = number_format($despacho->venta->monto,2, ",", ".")." Bs";
+                $data_content["dato-4"] = $despacho->fecha;
+                $data_content["dato-5"] = $despacho->trabajador ? $despacho->trabajador->nombre." ".$despacho->trabajador->apellido : "No posee";
+                $data_content["dato-6"] = $despacho->entregado ? "Finalizado" : "Pendiente";
+                array_push($datos,$data_content);
+            }
         }
 
         return $this->download("Reporte_Despachos.pdf", "Registro de Despachos", $filtro, $datos, $titulos);
@@ -1194,7 +1484,7 @@ class VentaController extends Controller
         foreach ($ventas as $sell) {
             $data_content["dato-1"] = $sell->id;
             $data_content["dato-2"] = $sell->cliente->nombre;
-            $data_content["dato-3"] = $sell->monto." Bs";
+            $data_content["dato-3"] = number_format($sell->monto,2, ",", ".")." Bs";
             $data_content["dato-4"] = $sell->fecha;
             $data_content["dato-5"] = $sell->credito." días";
 
@@ -1222,7 +1512,10 @@ class VentaController extends Controller
         if($id && $referencia && $banco && $tiempo){
             $filtro = "";
             if($tiempo!="todos"){//FILTRO CON TODO LO QUE MANDEN MAS FECHA
-                $datos = Pago::select('id')->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                $datos = Pago::select('id')->where(function($q) use ($referencia) {
+                                                $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                                ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                            })->
                                             where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                             whereBetween('fecha_pago', [$fecha_1, $fecha_2])->get();
 
@@ -1231,7 +1524,10 @@ class VentaController extends Controller
                                     whereIn('id_pago',$datos)->get();
             }
             else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
-                $datos = Pago::select('id')->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                $datos = Pago::select('id')->where(function($q) use ($referencia) {
+                                                $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                                ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                            })->
                                             where('banco','like',$banco == "todos" ? "%%" : $banco)->get();
 
                 $ventas = Venta::where('id_pago','!=',null)->
@@ -1257,10 +1553,10 @@ class VentaController extends Controller
                 $data_content["dato-1"] = $element->cliente->nombre;
             }
             $data_content["dato-2"] = $sell->pago->banco;
-            $data_content["dato-3"] = $sell->pago->referencia;
+            $data_content["dato-3"] = $sell->pago->referencia ? $sell->pago->referencia : "No posee";
             $data_content["dato-4"] = $sell->pago->fecha_pago;
             $data_content["dato-5"] = $sell->id;
-            $data_content["dato-6"] = $sell->monto." Bs";
+            $data_content["dato-6"] = number_format($sell->monto,2, ",", ".")." Bs";
             array_push($datos,$data_content);
         }
 
@@ -1288,8 +1584,8 @@ class VentaController extends Controller
         foreach ($productos as $row) {
             $data_content["dato-1"] = $row->producto->nombre;
             $data_content["dato-2"] = $row->cantidad;
-            $data_content["dato-3"] = $row->precio." Bs";
-            $data_content["dato-4"] = $row->cantidad*$row->precio." Bs";
+            $data_content["dato-3"] = number_format($row->precio,2, ",", ".")." Bs";
+            $data_content["dato-4"] = number_format($row->cantidad*$row->precio,2, ",", ".")." Bs";
             $total += $row->cantidad*$row->precio;
             array_push($datos,$data_content);
         }
@@ -1300,6 +1596,46 @@ class VentaController extends Controller
             'datos' => $datos,
             'header' => $header,
             'despacho' => $despacho,
+            'titulos' => $titulos,
+            'datos' => $datos,
+            'total' => $total,
+        ]); 
+        return $pdf->stream($nombre);
+    }
+
+    public function downloadDetailVenta($id = null)
+    {   
+        //$id va ser el id del despacho que deseo ver
+        $venta = Venta::find($id);
+
+        //$id va ser el id de la compra
+        if(empty($id) || empty($venta))
+        return redirect()->route('list-ventas');
+
+        //recojo todos los productos de la compra
+        $productos = Orden_Producto::where('id_venta',$venta->id)->get();
+
+        $nombre = "Reporte_Venta(".$venta->id.").pdf";
+        $header = "Venta - COD(".$venta->id.")";
+        $datos = array();
+        $total = 0;
+        $titulos = array('Producto', 'Cantidad (Kg/Und)', 'Precio', 'Total');
+
+        foreach ($productos as $row) {
+            $data_content["dato-1"] = $row->producto->nombre;
+            $data_content["dato-2"] = $row->cantidad;
+            $data_content["dato-3"] = number_format($row->precio,2, ",", ".")." Bs";
+            $data_content["dato-4"] = number_format($row->cantidad*$row->precio,2, ",", ".")." Bs";
+            $total += $row->cantidad*$row->precio;
+            array_push($datos,$data_content);
+        }
+
+        $pdf = resolve('dompdf.wrapper');
+        $pdf->loadView('layouts.ventadetailpdf',[
+            'nombre' => $nombre,
+            'datos' => $datos,
+            'header' => $header,
+            'informacion' => $venta,
             'titulos' => $titulos,
             'datos' => $datos,
             'total' => $total,

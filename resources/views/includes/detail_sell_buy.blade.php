@@ -1,3 +1,11 @@
+<style>
+    @media (max-width: 420px) {  
+        #div-product-data #detail-product-label{
+            font-size: 10px;
+        }
+    }
+</style>
+
 <div class="modal fade" id="{{ $data['modal-id'] }}" tabindex="-1" role="dialog" aria-labelledby="titulo" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
@@ -14,7 +22,7 @@
                 <!-- INFORMACIÓN PRODUCTO A PRODUCTO -->
                 <div class="form-row justify-content-center" id="div-product-data">
                     <div class="col-12 p-2" >
-                        <div class="input-group row justify-content-center">
+                        <div class="input-group row justify-content-center" id="detail-product-label">
                             <div class="col-6">
                                 <!-- PRODUCTO -->
                                 <strong>Producto:</strong>

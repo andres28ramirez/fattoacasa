@@ -8,6 +8,11 @@ Route::get('/home', 'HomeController@index')->name('home_2');
 /* FILTRAR EL INDICADOR QUE APARECE EN EL HOME */
 Route::post('filter-home', 'HomeController@ajaxindicator')->name('filter-home');
 
+/* MANUALES DE USUARIO */
+Route::group(['prefix'=>'manual'],function(){
+    Route::get('manuales', 'ReporteController@showManuals')->name('manual-usuario');
+});
+
 Route::group(['prefix'=>'user'],function(){
     Route::get('perfil', 'UsuarioController@showPerfil')->name('perfil');
     Route::post('editar-perfil', 'UsuarioController@updatePerfil')->name('edit-profile');
@@ -45,6 +50,7 @@ Route::group(['prefix'=>'user'],function(){
     Route::get('backups/create', 'UsuarioController@createBackup')->name('create-backup');
     Route::get('backups/download/{file_name}', 'UsuarioController@downloadBackup')->name('download-backup');
     Route::get('backups/delete/{file_name}', 'UsuarioController@deleteBackup')->name('delete-backup');
+    Route::post('backups/restore', 'UsuarioController@restoreBackup')->name('restore-backup');
 });
 
 Route::group(['prefix'=>'indicadores'],function(){
@@ -113,10 +119,10 @@ Route::group(['prefix'=>'finanzas'],function(){
     Route::post('eliminar-gasto-costo', 'FinanzaController@deleteGastoCosto')->name('delete-gasto-costo');
 
     /* NOMINA */
-    Route::get('nómina/{registros?}/{empleado?}/{tiempo?}/{ayo?}/{mes?}/{orden?}', 'FinanzaController@showNomina')->name('list-nomina');
+    Route::get('nómina/{registros?}/{tiempo?}/{ayo?}/{mes?}/{orden?}', 'FinanzaController@showNomina')->name('list-nomina');
     Route::get('agregar-nomina', 'FinanzaController@createNomina')->name('agg-nomina');
     Route::get('detail-nomina/{id?}', 'FinanzaController@detailNomina')->name('detail-nomina');
-    Route::get('pdf-list-nomina/{empleado?}/{tiempo?}/{ayo?}/{mes?}', 'FinanzaController@downloadNomina')->name('pdf-list-nomina');
+    Route::get('pdf-list-nomina/{tiempo?}/{ayo?}/{mes?}', 'FinanzaController@downloadNomina')->name('pdf-list-nomina');
 
     Route::post('almacenar-nomina', 'FinanzaController@saveNomina')->name('save-nomina');
     Route::post('editar-nomina', 'FinanzaController@updateNomina')->name('edit-nomina');
@@ -169,11 +175,13 @@ Route::group(['prefix'=>'compras'],function(){
     Route::get('detail-compra/{id?}', 'CompraController@detailCompra')->name('detail-compra');
     Route::post('detail-compra-products', 'CompraController@detailCompraProducts')->name('products-compra');
     Route::get('pdf-compras/{id?}/{proveedor?}/{estado?}/{tiempo?}/{ayo?}/{fecha_1?}/{fecha_2?}', 'CompraController@downloadCompra')->name('pdf-compras');
+    Route::get('pdf-detail-compra/{id?}', 'CompraController@downloadDetailCompra')->name('pdf-detail-compra');
 
     Route::post('almacenar-compra', 'CompraController@saveCompra')->name('save-compra');
     Route::post('almacenar-pago', 'CompraController@savePago')->name('save-compra-pago');
     Route::post('almacenar-desperdicio', 'CompraController@saveDesperdicio')->name('save-desperdicio');
     Route::post('editar-compra', 'CompraController@updateCompra')->name('edit-compra');
+    Route::post('update-orden-compra', 'CompraController@updateOrden')->name('update-orden-compra');
     Route::post('eliminar-compra', 'CompraController@deleteCompra')->name('delete-compras');
 
     /* SUMINISTRO - PRECIO DE PROVEEDORES ETC */
@@ -190,6 +198,10 @@ Route::group(['prefix'=>'compras'],function(){
     Route::get('detail-pago/{id?}', 'CompraController@detailPago')->name('compra-pago');
     Route::post('editar-pago', 'CompraController@updatePago')->name('edit-pago');
     Route::get('pdf-compra-pago/{id?}/{referencia?}/{banco?}/{tiempo?}/{fecha_1?}/{fecha_2?}', 'CompraController@downloadPago')->name('pdf-compra-pago');
+
+    /* VENTAS DESCARTADAS */
+    Route::get('lista-descartadas/{registros?}/{id?}/{proveedor?}/{estado?}/{tiempo?}/{fecha_1?}/{fecha_2?}/{orden?}', 'CompraController@showDescartadas')->name('discard-compras');
+    Route::get('reintegrar-compra/{id?}', 'CompraController@reintegrarCompra')->name('reintegrar-compras');
 });
 
 Route::group(['prefix'=>'ventas'],function(){
@@ -198,10 +210,12 @@ Route::group(['prefix'=>'ventas'],function(){
     Route::get('agregar-venta', 'VentaController@createVenta')->name('agg-venta');
     Route::get('detail-venta/{id?}', 'VentaController@detailVenta')->name('detail-venta');
     Route::get('pdf-ventas/{id?}/{proveedor?}/{estado?}/{tiempo?}/{fecha_1?}/{fecha_2?}', 'VentaController@downloadVenta')->name('pdf-ventas');
+    Route::get('pdf-detail-venta/{id?}', 'VentaController@downloadDetailVenta')->name('pdf-detail-venta');
 
     Route::post('almacenar-venta', 'VentaController@saveVenta')->name('save-venta');
     Route::post('almacenar-pago', 'VentaController@savePago')->name('save-venta-pago');
     Route::post('editar-venta', 'VentaController@updateVenta')->name('edit-venta');
+    Route::post('update-orden-venta', 'VentaController@updateOrden')->name('update-orden-venta');
     Route::post('eliminar-venta', 'VentaController@deleteVenta')->name('delete-ventas');
 
     /* PEDIDOS SIN DESPACHO */
@@ -227,6 +241,10 @@ Route::group(['prefix'=>'ventas'],function(){
     Route::get('detail-pago/{id?}', 'VentaController@detailPago')->name('venta-pago');
     Route::get('pdf-ventas-pago/{id?}/{referencia?}/{banco?}/{tiempo?}/{fecha_1?}/{fecha_2?}', 'VentaController@downloadPago')->name('pdf-ventas-pago');
     Route::post('editar-pago', 'VentaController@updatePago')->name('edit-pago-venta');
+
+    /* VENTAS DESCARTADAS */
+    Route::get('lista-descartadas/{registros?}/{id?}/{proveedor?}/{estado?}/{tiempo?}/{fecha_1?}/{fecha_2?}/{orden?}', 'VentaController@showDescartadas')->name('discard-ventas');
+    Route::get('reintegrar-venta/{id?}', 'VentaController@reintegrarVenta')->name('reintegrar-ventas');
 });
 
 Route::group(['prefix'=>'reporte'],function(){

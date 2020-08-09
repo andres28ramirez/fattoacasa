@@ -81,9 +81,9 @@
             return false;
         }
 
-        if($(input).val().length < 7){
+        if($(input).val().length < 8 || $(input).val().length > 9){
             var inputDiv = $(input).parent();
-            $(inputDiv).attr("data-validate","Debe llevar mínimo 7 cifras")
+            $(inputDiv).attr("data-validate","Debe llevar entre 8 y 9 cifras")
             return false;
         }
     }
@@ -185,6 +185,30 @@
         }
     }
 
+    function validate_fecha_pago(input){
+        var f = new Date();
+        var month = (f.getMonth() +1); 
+        month > 9 ? "" : month = "0"+month;
+        var fecha = f.getFullYear() + "-" + month + "-" + f.getDate();
+
+        if(Date.parse($(input).val()) > Date.parse(fecha)) {
+            var inputDiv = $(input).parent();
+            $(inputDiv).attr("data-validate","La fecha debe ser menor a hoy");
+            return false;
+        }
+    }
+
+    function validate_file(input){
+        var archivo = $(input).val();
+        var extension = (archivo.substring(archivo.lastIndexOf("."))).toLowerCase();
+        if(extension != ".sql") {
+            //SE ACOMODA EL DATA VALIDATE PARA LA ALERTA
+            var inputDiv = $(input).parent();
+            $(inputDiv).attr("data-validate","El tipo de archivo no esta permitido");
+            return false;
+        }
+    }
+
     //FUNCIONES QUE EJECUTAN CADA VALIDACIÓN DE ARRIBA Y PONE O QUITA ALERTAS
     function validate (input) {
 
@@ -232,6 +256,12 @@
             else if($(input).attr('id') == 'form-fecha-2'){
                 return validate_fecha_2(input);
             }
+            else if($(input).attr('id') == 'form-fecha-pago'){
+                return validate_fecha_pago(input);
+            }
+            else if($(input).attr('id') == 'form_file'){
+                return validate_file(input);
+            }
         }
         else{//AQUI YA NO ES REQUERIDO
             //REVISO SI ESTA VACIO PRIMERO POR LO QUE SI PUEDE PASAR
@@ -272,6 +302,9 @@
             }
             else if($(input).attr('id') == 'form-fecha-2'){
                 return validate_fecha_2(input);
+            }
+            else if($(input).attr('id') == 'form-fecha-pago'){
+                return validate_fecha_pago(input);
             }
         }
     }

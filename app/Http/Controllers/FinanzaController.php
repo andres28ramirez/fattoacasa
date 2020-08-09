@@ -83,7 +83,7 @@ class FinanzaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('list-gasto-costo')->with('message', $tipo.' añadido exitosamente');
+            return redirect()->route('list-gasto-costo')->with('message', $tipo.' añadido Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -106,35 +106,58 @@ class FinanzaController extends Controller
     {
         DB::beginTransaction();
         try{
+            //$referencia = $request->input('referencia');
+
+            /* if($referencia){
+                $validate = $this->validate($request, [
+                    'id_trabajador' => 'required',
+                    'mes' => 'required',
+                    'monto' => 'required',
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'referencia' => 'required|string|max:255|unique:pago',
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+            }
+            else{
+                $validate = $this->validate($request, [
+                    'id_trabajador' => 'required',
+                    'mes' => 'required',
+                    'monto' => 'required',
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+                $referencia = null;
+            } */
+            
             $validate = $this->validate($request, [
-                'id_trabajador' => 'required',
                 'mes' => 'required',
                 'monto' => 'required',
-                'banco' => 'required|string',
-                'fecha_pago' => 'required|string',
-                'referencia' => 'required|string|max:255|unique:pago',
             ]);
 
-            $id_trabajador = $request->input('id_trabajador');
+            //$id_trabajador = $request->input('id_trabajador');
             $mes           = $request->input('mes');
             $monto         = $request->input('monto');
-            $banco         = $request->input('banco');
-            $fecha_pago    = $request->input('fecha_pago');
-            $referencia    = $request->input('referencia');
+            //$banco         = $request->input('banco');
+            //$fecha_pago    = $request->input('fecha_pago');
+            //$referencia    = $request->input('referencia');
+            //$nota_pago     = $request->input('nota_pago');
             
             //Creamos el objeto del pago lo setteamos y grabamos
-            $pago = new Pago();
+            /* $pago = new Pago();
             $pago->banco      = $banco;
             $pago->referencia = $referencia;
             $pago->fecha_pago = $fecha_pago;
-            $pago->save();
+            $pago->nota_pago  = $nota_pago;
+            $pago->save(); */
             
             //GRABAMOS EL EGRESO
             $nomina = new Pago_Nomina();
-            $nomina->id_trabajador = $id_trabajador;
+            $nomina->id_trabajador = null;//$id_trabajador;
             $nomina->mes           = $mes."-01"; //le agrego el dia solo para que grabe
             $nomina->monto         = $monto;
-            $nomina->id_pago       = $pago->id; 
+            $nomina->id_pago       = null;//$pago->id; 
             $nomina->save();
 
             //GRABAMOS EL EGRESO
@@ -153,13 +176,13 @@ class FinanzaController extends Controller
             $report->id_user     = $id;
             $report->name        = $user->name;
             $report->activity    = "Módulo Finanzas";
-            $report->description = "Pago de Nómina añadido - Código (".$nomina->id.")";
+            $report->description = "Pago de Global de Personal añadido - Código (".$nomina->id.")";
 
             //Grabamos el reporte de almacenamiento en el sistema
             $report->save();
 
             DB::commit();
-            return redirect()->route('list-nomina')->with('message','Pago añadido exitosamente');
+            return redirect()->route('list-nomina')->with('message','Pago añadido Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -168,7 +191,7 @@ class FinanzaController extends Controller
             $report->id_user     = null;
             $report->name        = "Error en el Sistema";
             $report->activity    = "Módulo Finanzas";
-            $report->description = "Error al almacenar pago de nómina - Código SQL [".$e->getCode()."]";
+            $report->description = "Error al almacenar pago global de personal - Código SQL [".$e->getCode()."]";
 
             //Grabamos el reporte de error en el sistema
             $report->save();
@@ -187,7 +210,10 @@ class FinanzaController extends Controller
 
         if($id && $persona && $tiempo && $referencia){
             if($tiempo!="todos"){//FILTRO CON TODO LO QUE MANDEN MAS FECHA
-                $datos = Pago::select('id')->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->get();
+                $datos = Pago::select('id')->where(function($q) use ($referencia) {
+                                                $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                                ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                            })->get();
 
                 $ventas = Venta::where('id', 'like', $id == "todos" ? "%%" : $id)->
                                     where('id_cliente','like', $persona == "todos" ? "%%" : $persona)->
@@ -196,7 +222,10 @@ class FinanzaController extends Controller
                                     orderBy($order, 'desc')->paginate($registros);
             }
             else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
-                $datos = Pago::select('id')->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->get();
+                $datos = Pago::select('id')->where(function($q) use ($referencia) {
+                                                $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                                ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                            })->get();
 
                 $ventas = Venta::where('id', 'like', $id == "todos" ? "%%" : "%".$id."%")->
                                     where('id_cliente','like', $persona == "todos" ? "%%" : $persona)->
@@ -386,27 +415,22 @@ class FinanzaController extends Controller
         ]);
     }
 
-    public function showNomina($registros = 10, $empleado = null, $tiempo = null, $ayo = null, $mes = null, $order = 'id')
+    public function showNomina($registros = 10, $tiempo = null, $ayo = null, $mes = null, $order = 'id')
     {
         //compruebo que el orden no sea distintas a las opciones que puede tomar sino, le impongo que sea ID
-        if($order!="id" && $order!="id_trabajador" && $order!="created_at" && $order!="mes" && $order!="monto")
+        if($order!="id" && $order!="created_at" && $order!="mes" && $order!="monto")
             $order = "id";
 
-        if($tiempo && $empleado){
-            if($tiempo=="todos"){//FILTRO CON TODO LO QUE MANDEN SIN FECH
-                $nomina = Pago_Nomina::where('id_trabajador', 'like', $empleado == "todos" ? "%%" : $empleado)->
-                                    orderBy($order, 'desc')->paginate($registros);
+        if($tiempo){
+            if($tiempo=="todos"){//FILTRO CON TODO LO QUE MANDEN SIN FECHA
+                $nomina = Pago_Nomina::orderBy($order, 'desc')->paginate($registros);
             }
             else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
                 if($tiempo == "Año"){
-                    $nomina = Pago_Nomina::where('id_trabajador', 'like', $empleado == "todos" ? "%%" : $empleado)->
-                                    whereYear('mes', $ayo)->
-                                    orderBy($order, 'desc')->paginate($registros);
+                    $nomina = Pago_Nomina::whereYear('mes', $ayo)->orderBy($order, 'desc')->paginate($registros);
                 }
                 else if($tiempo == "Mes"){
-                    $nomina = Pago_Nomina::where('id_trabajador', 'like', $empleado == "todos" ? "%%" : $empleado)->
-                                    whereMonth('mes', $mes)->
-                                    orderBy($order, 'desc')->paginate($registros);
+                    $nomina = Pago_Nomina::whereMonth('mes', $mes)->orderBy($order, 'desc')->paginate($registros);
                 }
             }
         }
@@ -414,18 +438,13 @@ class FinanzaController extends Controller
             $nomina = Pago_Nomina::orderBy($order, 'desc')->paginate($registros);
         }
 
-        //Para filtrar por empleado
-        $trabajadores = Trabajador::all();
-
         return view('finance.nomina.list', [
             'nomina' => $nomina,
             'registros' => $registros,
             'order' => $order,
-            'empleado' => $empleado,
             'tiempo' => $tiempo,
             'ayo' => $ayo,
             'mes' => $mes,
-            'trabajadores' => $trabajadores,
         ]);
     }
 
@@ -440,14 +459,20 @@ class FinanzaController extends Controller
             if($tiempo!="todos"){//FILTRO CON TODO LO QUE MANDEN MAS FECHA
                 switch ($tipo) {
                     case "todos":
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereBetween('fecha_pago', [$fecha_1, $fecha_2])->
                                         orderBy($order, 'desc')->paginate($registros);
                         break;
                     case "Compra":
                         $datos = Compra::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereBetween('fecha_pago', [$fecha_1, $fecha_2])->
                                         whereIn('id',$datos)->
@@ -455,15 +480,10 @@ class FinanzaController extends Controller
                         break;
                     case "Venta":
                         $datos = Venta::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
-                                        where('banco','like',$banco == "todos" ? "%%" : $banco)->
-                                        whereBetween('fecha_pago', [$fecha_1, $fecha_2])->
-                                        whereIn('id',$datos)->
-                                        orderBy($order, 'desc')->paginate($registros);
-                        break;
-                    case "Nomina":
-                        $datos = Pago_Nomina::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereBetween('fecha_pago', [$fecha_1, $fecha_2])->
                                         whereIn('id',$datos)->
@@ -474,27 +494,29 @@ class FinanzaController extends Controller
             else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
                 switch ($tipo) {
                     case "todos":
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         orderBy($order, 'desc')->paginate($registros);
                         break;
                     case "Compra":
                         $datos = Compra::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereIn('id',$datos)->
                                         orderBy($order, 'desc')->paginate($registros);
                         break;
                     case "Venta":
                         $datos = Venta::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
-                                        where('banco','like',$banco == "todos" ? "%%" : $banco)->
-                                        whereIn('id',$datos)->
-                                        orderBy($order, 'desc')->paginate($registros);
-                        break;
-                    case "Nomina":
-                        $datos = Pago_Nomina::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereIn('id',$datos)->
                                         orderBy($order, 'desc')->paginate($registros);
@@ -558,16 +580,12 @@ class FinanzaController extends Controller
         //$id va ser el id del pago de nomina
         $nomina = Pago_Nomina::find($id);
 
-        //trabajadores
-        $trabajadores = Trabajador::all();
-
         //$id va ser el id de la compra
         if(empty($id) || empty($nomina))
         return redirect()->route('list-nomina');
 
         return view('finance.nomina.detail', [
             'nomina' => $nomina,
-            'trabajadores' => $trabajadores,
         ]);
     }
 
@@ -618,7 +636,7 @@ class FinanzaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-gasto-costo', ['id' => $gastocosto->id])->with('message', $tipo.' Editado Correctamente');
+            return redirect()->route('detail-gasto-costo', ['id' => $gastocosto->id])->with('message', $tipo.' Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -644,35 +662,56 @@ class FinanzaController extends Controller
             //id del pago de nomina
             $id = $request->input('id');
             $nomina = Pago_Nomina::find($id);
+            //$referencia = $request->input('referencia');
+
+            /* if($referencia){
+                $validate = $this->validate($request, [
+                    'id_trabajador' => 'required',
+                    'mes' => 'required',
+                    'monto' => 'required',
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'referencia' => 'required|string|max:255|unique:pago,referencia,'.$nomina->pago->id,
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+            }
+            else{
+                $validate = $this->validate($request, [
+                    'id_trabajador' => 'required',
+                    'mes' => 'required',
+                    'monto' => 'required',
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+                $referencia = null;
+            } */
 
             $validate = $this->validate($request, [
-                'id_trabajador' => 'required',
                 'mes' => 'required',
                 'monto' => 'required',
-                'banco' => 'required|string',
-                'fecha_pago' => 'required|string',
-                'referencia' => 'required|string|max:255|unique:pago,referencia,'.$nomina->pago->id,
             ]);
 
-            $id_trabajador = $request->input('id_trabajador');
+            //$id_trabajador = $request->input('id_trabajador');
             $mes           = $request->input('mes');
             $monto         = $request->input('monto');
-            $banco         = $request->input('banco');
-            $fecha_pago    = $request->input('fecha_pago');
-            $referencia    = $request->input('referencia');
+            //$banco         = $request->input('banco');
+            //$fecha_pago    = $request->input('fecha_pago');
+            //$nota_pago     = $request->input('nota_pago');
             
             //Creamos el objeto del pago lo setteamos y grabamos
-            $pago = Pago::find($nomina->id_pago);
+            /* $pago = Pago::find($nomina->id_pago);
             $pago->banco      = $banco;
             $pago->referencia = $referencia;
             $pago->fecha_pago = $fecha_pago;
-            $pago->update();
+            $pago->nota_pago  = $nota_pago;
+            $pago->update(); */
             
             //GRABAMOS EL PAGO DE NOMINA
-            $nomina->id_trabajador = $id_trabajador;
+            $nomina->id_trabajador = null;//$id_trabajador;
             $nomina->mes           = $mes."-01"; //le agrego el dia solo para que grabe
             $nomina->monto         = $monto;
-            $nomina->id_pago       = $pago->id; 
+            $nomina->id_pago       = null;//$pago->id; 
             $nomina->update();
 
             //Buscamos el egreso y los seteamos tambien
@@ -689,13 +728,13 @@ class FinanzaController extends Controller
             $report->id_user     = $user->id;
             $report->name        = $user->name;
             $report->activity    = "Módulo Finanzas";
-            $report->description = "Pago de Nómina Editado - Código (".$id.")";
+            $report->description = "Pago Global de Personal Editado - Código (".$id.")";
 
             //Grabamos el reporte de almacenamiento en el sistema
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-nomina', ['id' => $nomina->id])->with('message', 'Pago Editado Correctamente');
+            return redirect()->route('detail-nomina', ['id' => $nomina->id])->with('message', 'Pago Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -704,7 +743,7 @@ class FinanzaController extends Controller
             $report->id_user     = null;
             $report->name        = "Error del Sistema";
             $report->activity    = "Módulo Finanzas";
-            $report->description = "Error al editar pago de nómina - Código SQL [".$e->getCode()."]";
+            $report->description = "Error al editar pago global de personal - Código SQL [".$e->getCode()."]";
 
             //Grabamos el reporte de error en el sistema
             $report->save();
@@ -720,15 +759,27 @@ class FinanzaController extends Controller
         try{
             //id del pago
             $id = $request->input('id');
+            $referencia = $request->input('referencia');
             
-            $validate = $this->validate($request, [
-                'banco' => 'required|string',
-                'fecha_pago' => 'required|string',
-                'referencia' => 'required|string|max:255|unique:pago,referencia,'.$id,
-            ]);
+            if($referencia){
+                $validate = $this->validate($request, [
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'referencia' => 'required|string|max:255|unique:pago,referencia,'.$id,
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+            }
+            else{
+                $validate = $this->validate($request, [
+                    'banco' => 'required|string',
+                    'fecha_pago' => 'required|string',
+                    'nota_pago' => 'required|string|max:255',
+                ]);
+                $referencia = null;
+            }
             
             $banco      = $request->input('banco');
-            $referencia = $request->input('referencia');
+            $nota_pago  = $request->input('nota_pago');
             $fecha_pago = $request->input('fecha_pago');
             
             //obtenemos el objeto del pago para hacerle el update
@@ -736,6 +787,7 @@ class FinanzaController extends Controller
             $pago->banco      = $banco;
             $pago->referencia = $referencia;
             $pago->fecha_pago = $fecha_pago;
+            $pago->nota_pago  = $nota_pago;
 
             //grabo el update del pago
             $pago->update();
@@ -755,7 +807,7 @@ class FinanzaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-pago', ['id' => $pago->id])->with('message', 'Pago Editado Correctamente');
+            return redirect()->route('detail-pago', ['id' => $pago->id])->with('message', 'Pago Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -840,6 +892,7 @@ class FinanzaController extends Controller
 
                 //Eliminar pago de la nomina
                 $pago = Pago::find($nomina->id_pago);
+                if($pago)
                 $pago->delete();
 
                 array_push($valores, $valor);
@@ -970,7 +1023,10 @@ class FinanzaController extends Controller
         if($id && $persona && $tiempo && $referencia){
             $filtro = "";
             if($tiempo!="todos"){//FILTRO CON TODO LO QUE MANDEN MAS FECHA
-                $datos = Pago::select('id')->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->get();
+                $datos = Pago::select('id')->where(function($q) use ($referencia) {
+                                                $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                                ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                            })->get();
 
                 $ventas = Venta::where('id', 'like', $id == "todos" ? "%%" : $id)->
                                     where('id_cliente','like', $persona == "todos" ? "%%" : $persona)->
@@ -978,7 +1034,10 @@ class FinanzaController extends Controller
                                     whereIn('id_pago',$datos)->get();
             }
             else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
-                $datos = Pago::select('id')->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->get();
+                $datos = Pago::select('id')->where(function($q) use ($referencia) {
+                                                $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                                ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                            })->get();
 
                 $ventas = Venta::where('id', 'like', $id == "todos" ? "%%" : "%".$id."%")->
                                     where('id_cliente','like', $persona == "todos" ? "%%" : $persona)->
@@ -987,7 +1046,7 @@ class FinanzaController extends Controller
             $tiempo != "todos" ? $filtro .= "Fecha de Ingreso entre ".$fecha_1." a ".$fecha_2 : "";
             $id != "todos" ? $filtro .= " | Código de Venta: ".$id : "";
             $referencia != "todos" ? $filtro .= " | Referencia Bancaria: ".$referencia : "";
-            $persona != "todos" ? $filtro .= " | Proveedor Nro: ".$persona : "";
+            $persona != "todos" ? $filtro .= " | Cliente Nro: ".$persona : "";
         }
         else{
             $ventas = Venta::where('id_pago','!=',null)->get();
@@ -1001,10 +1060,10 @@ class FinanzaController extends Controller
         foreach ($ventas as $row) {
             $data_content["dato-1"] = $row->id;
             $data_content["dato-2"] = $row->cliente->nombre;
-            $data_content["dato-3"] = $row->monto." Bs";
+            $data_content["dato-3"] = number_format($row->monto,2, ",", ".")." Bs";
             $data_content["dato-4"] = $row->fecha;
             $data_content["dato-5"] = $row->pago->fecha_pago;
-            $data_content["dato-6"] = $row->pago->referencia;
+            $data_content["dato-6"] = $row->pago->referencia ? $row->pago->referencia : "No posee";
             array_push($datos,$data_content);
         }
 
@@ -1102,29 +1161,33 @@ class FinanzaController extends Controller
             if($row->compra){
                 $data_content["dato-1"] = "Compra";
                 $data_content["dato-2"] = $row->compra->proveedor->nombre;
-                $data_content["dato-3"] = $row->monto." Bs";
+                $data_content["dato-3"] = number_format($row->monto,2, ",", ".")." Bs";
                 $data_content["dato-4"] = $row->compra->fecha;
                 $data_content["dato-5"] = $row->compra->pago ? $row->compra->pago->fecha_pago : "No posee";
-                $data_content["dato-6"] = $row->compra->pago ? $row->compra->pago->referencia : "No posee";
+                if($row->compra->pago)
+                    $data_content["dato-6"] = $row->compra->pago->referencia ? $row->compra->pago->referencia : "No posee";
+                else
+                    $data_content["dato-6"] = "No posee";
             }
             else if($row->gastocosto){
                 $data_content["dato-1"] = $row->gastocosto->tipo;
                 $data_content["dato-2"] = $row->gastocosto->descripcion;
-                $data_content["dato-3"] = $row->monto." Bs";
+                $data_content["dato-3"] = number_format($row->monto,2, ",", ".")." Bs";
                 $data_content["dato-4"] = $row->gastocosto->fecha;
                 $data_content["dato-5"] = "No posee";
                 $data_content["dato-6"] = "No posee";
             }
             else if($row->nomina){
-                $data_content["dato-1"] = "Pago Nómina";
-                $data_content["dato-2"] = $row->nomina->trabajador->nombre." ".$row->nomina->trabajador->apellido;
-                $data_content["dato-3"] = $row->monto." Bs";
+                $data_content["dato-1"] = "Pago de Personal";
+                $data_content["dato-2"] = "Global";
+                $data_content["dato-3"] = number_format($row->monto,2, ",", ".")." Bs";
                 setlocale(LC_TIME, "spanish");
                 $data_content["dato-4"] = strftime("%B", strtotime($row->nomina->mes));
-                $data_content["dato-5"] = $row->nomina->pago->fecha_pago;
-                $data_content["dato-6"] = $row->nomina->pago->referencia;
+                $data_content["dato-5"] = strftime("%Y", strtotime($row->nomina->mes));
+                $data_content["dato-6"] = "No posee";
             }
 
+            if($row->compra || $row->gastocosto || $row->nomina)
             array_push($datos,$data_content);
         }
 
@@ -1158,7 +1221,7 @@ class FinanzaController extends Controller
             $data_content["dato-1"] = $row->id;
             $data_content["dato-2"] = $row->tipo;
             $data_content["dato-3"] = $row->descripcion;
-            $data_content["dato-4"] = $row->monto." Bs";
+            $data_content["dato-4"] = number_format($row->monto,2, ",", ".")." Bs";
             $data_content["dato-5"] = $row->fecha;
             array_push($datos,$data_content);
         }
@@ -1166,22 +1229,20 @@ class FinanzaController extends Controller
         return $this->download("Reporte_Gasto_Costo.pdf", "Gastos / Costos de la Empresa", $filtro, $datos, $titulos);
     }
 
-    public function downloadNomina($empleado = null, $tiempo = null, $ayo = null, $mes = null)
+    public function downloadNomina($tiempo = null, $ayo = null, $mes = null)
     {    
-        if($tiempo && $empleado){
+        if($tiempo){
             $filtro = "";
-            if($tiempo=="todos"){//FILTRO CON TODO LO QUE MANDEN SIN FECH
-                $nomina = Pago_Nomina::where('id_trabajador', 'like', $empleado == "todos" ? "%%" : $empleado)->get();
-            }
-            else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
+            if($tiempo!="todos"){
                 if($tiempo == "Año"){
-                    $nomina = Pago_Nomina::where('id_trabajador', 'like', $empleado == "todos" ? "%%" : $empleado)->
-                                    whereYear('mes', $ayo)->get();
+                    $nomina = Pago_Nomina::whereYear('mes', $ayo)->get();
                 }
                 else if($tiempo == "Mes"){
-                    $nomina = Pago_Nomina::where('id_trabajador', 'like', $empleado == "todos" ? "%%" : $empleado)->
-                                    whereMonth('mes', $mes)->get();
+                    $nomina = Pago_Nomina::whereMonth('mes', $mes)->get();
                 }
+            }
+            else{
+                $nomina = Pago_Nomina::all();
             }
             if($tiempo == "Año") $filtro .= "Pagos del año: ".$ayo;
             if($tiempo == "Mes"){
@@ -1191,30 +1252,27 @@ class FinanzaController extends Controller
                 $mes == 10 ? $mes = "Octubre" : ""; $mes == 11 ? $mes = "Noviembre" : ""; $mes == 12 ? $mes = "Diciembre" : ""; 
                 $filtro .= "Pagos de la fecha: ".$mes;
             }
-            $empleado != "todos" ? $filtro .= " | Código de Empleado: ".$empleado : "";
         }
         else{
             $nomina = Pago_Nomina::all();
             $filtro = "";
         }
 
-        $filtro == "" ? $filtro = "Todos los pagos de nómina" : "";
+        $filtro == "" ? $filtro = "Todos los pagos por mes de personal" : "";
         $datos = array();
-        $titulos = array('Código', 'Empleado', 'Año', 'Mes', 'Monto', 'Referencia de Pago');
+        $titulos = array('Código', 'Año', 'Mes', 'Monto');
 
         foreach ($nomina as $row) {
             $data_content["id"] = $row->id;
             $data_content["dato-1"] = $row->id;
-            $data_content["dato-2"] = $row->trabajador->nombre." ".$row->trabajador->apellido;
-            $data_content["dato-3"] = strftime("%Y", strtotime($row->mes));
+            $data_content["dato-2"] = strftime("%Y", strtotime($row->mes));
             setlocale(LC_TIME, "spanish"); 
-            $data_content["dato-4"] = strftime("%B", strtotime($row->mes));
-            $data_content["dato-5"] = $row->monto." Bs";
-            $data_content["dato-6"] = $row->pago->referencia;
+            $data_content["dato-3"] = strftime("%B", strtotime($row->mes));
+            $data_content["dato-4"] = number_format($row->monto,2, ",", ".")." Bs";
             array_push($datos,$data_content);
         }
 
-        return $this->download("Reporte_Nómina.pdf", "Pagos de Nómina de la Empresa", $filtro, $datos, $titulos);
+        return $this->download("Reporte_Nómina.pdf", "Pagos de Personal en la Empresa", $filtro, $datos, $titulos);
     }
 
     public function downloadPago($tipo = null, $referencia = null, $banco = null, $tiempo = null, $fecha_1 = null, $fecha_2 = null)
@@ -1224,27 +1282,29 @@ class FinanzaController extends Controller
             if($tiempo!="todos"){//FILTRO CON TODO LO QUE MANDEN MAS FECHA
                 switch ($tipo) {
                     case "todos":
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereBetween('fecha_pago', [$fecha_1, $fecha_2])->get();
                         break;
                     case "Compra":
                         $datos = Compra::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereBetween('fecha_pago', [$fecha_1, $fecha_2])->
                                         whereIn('id',$datos)->get();
                         break;
                     case "Venta":
                         $datos = Venta::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
-                                        where('banco','like',$banco == "todos" ? "%%" : $banco)->
-                                        whereBetween('fecha_pago', [$fecha_1, $fecha_2])->
-                                        whereIn('id',$datos)->get();
-                        break;
-                    case "Nomina":
-                        $datos = Pago_Nomina::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereBetween('fecha_pago', [$fecha_1, $fecha_2])->
                                         whereIn('id',$datos)->get();
@@ -1254,24 +1314,27 @@ class FinanzaController extends Controller
             else{//FILTRO CON TODO LO QUE MANDEN MENOS FECHA
                 switch ($tipo) {
                     case "todos":
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->get();
                         break;
                     case "Compra":
                         $datos = Compra::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereIn('id',$datos)->get();
                         break;
                     case "Venta":
                         $datos = Venta::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
-                                        where('banco','like',$banco == "todos" ? "%%" : $banco)->
-                                        whereIn('id',$datos)->get();
-                        break;
-                    case "Nomina":
-                        $datos = Pago_Nomina::select('id_pago')->where('id_pago','!=',null)->get();
-                        $pagos = Pago::where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")->
+                        $pagos = Pago::where(function($q) use ($referencia) {
+                                            $q->where('referencia','like',$referencia == "todos" ? "%%" : "%".$referencia."%")
+                                            ->orwhere('referencia',$referencia == "todos" ? null : "%%");
+                                        })->
                                         where('banco','like',$banco == "todos" ? "%%" : $banco)->
                                         whereIn('id',$datos)->get();
                         break;
@@ -1292,22 +1355,23 @@ class FinanzaController extends Controller
         $titulos = array('Código', 'Banco', 'Referencia', 'Fecha', 'Tipo', 'Monto');
 
         foreach ($pagos as $row) {
+            $show_pago = false;
             $data_content["dato-1"] = $row->id;
             $data_content["dato-2"] = $row->banco;
-            $data_content["dato-3"] = $row->referencia;
+            $data_content["dato-3"] = $row->referencia ? $row->referencia : "No posee";
             $data_content["dato-4"] = $row->fecha_pago;
             foreach($row->compra as $fila){
+                $show_pago = true;
                 $data_content["dato-5"] = "Compra";
-                $data_content["dato-6"] = $fila->monto;
+                $data_content["dato-6"] = number_format($fila->monto,2, ",", "."). " Bs";
             }
             foreach($row->venta as $fila){
+                $show_pago = true;
                 $data_content["dato-5"] = "Venta";
-                $data_content["dato-6"] = $fila->monto;
+                $data_content["dato-6"] = number_format($fila->monto,2, ",", "."). " Bs";
             }
-            foreach($row->nomina as $fila){
-                $data_content["dato-5"] = "Nómina";
-                $data_content["dato-6"] = $fila->monto;
-            }
+
+            if($show_pago)
             array_push($datos,$data_content);
         }
 

@@ -116,7 +116,7 @@
                     ),
                     array(
                         "component-type" => "textarea",
-                        "label-name" => "Description del Producto",
+                        "label-name" => "Descripción del Producto",
                         "icon" => "fa-info",
                         "type" => "text",
                         "id_name" => "form-description",

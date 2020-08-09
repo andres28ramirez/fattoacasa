@@ -1,3 +1,23 @@
+<style>
+    @media (max-width: 550px) {  
+        #singlechart{{ $data['canva'] }}{
+            height: 60px;
+        }
+    }
+
+    @media (max-width: 500px) {  
+        #singlechart{{ $data['canva'] }}{
+            height: 60px;
+        }
+    }
+
+    @media (max-width: 400px) {  
+        #singlechart{{ $data['canva'] }}{
+            height: 60px;
+        }
+    }
+</style>
+
 <div class="rounded" id="dashboard-cv">
     <div class="card-header py-3 d-flex">
         <h6 class="my-auto font-weight-bold float-left" id="singlechart-title-{{ $data['canva'] }}" style="color: #333333; letter-spacing: 1px">{{ $data['texto'] }}</h6>

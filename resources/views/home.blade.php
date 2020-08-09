@@ -5,6 +5,80 @@
 @section('titulo','FATTO A CASA')
 
 @section('content')
+<style>
+    .info-box {
+        box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+        border-radius: .25rem;
+        background: #fff;
+        display: -ms-flexbox;
+        display: flex;
+        margin-bottom: 1rem;
+        min-height: 80px;
+        padding: .5rem;
+        position: relative;
+    }
+
+    .info-box .info-box-icon {
+        border-radius: .25rem;
+        -ms-flex-align: center;
+        align-items: center;
+        display: -ms-flexbox;
+        display: flex;
+        font-size: 1.875rem;
+        -ms-flex-pack: center;
+        justify-content: center;
+        text-align: center;
+        width: 70px;
+    }
+
+    .info-box .info-box-content {
+        -ms-flex: 1;
+        flex: 1;
+        padding: 5px 10px;
+    }
+
+    .info-box .info-box-text, .info-box .progress-description {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .info-box .info-box-number {
+        display: block;
+        font-weight: 700;
+    }
+
+    .products-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .product-list-in-card>.item {
+        border-radius: 0;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+    }
+
+    .products-list>.item {
+        border-radius: .25rem;
+        background: #fff;
+        padding: 10px 0;
+    }
+
+    .products-list .product-title {
+        font-weight: 600;
+    }
+
+    .products-list .product-description {
+        color: #6c757d;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
 <div class="container-fluid">
   <div class="row justify-content-center">
     <div class="col-12">
@@ -36,7 +110,7 @@
                 array(
                     "color" => "#FF8100",
                     "cantidad" => $suministros ? round($suministros->total,2) : 0,
-                    "text" => "ALMACEN",
+                    "text" => "SUMINISTRO",
                     "figure" => "fa-clipboard"
                 ) 
             );
@@ -46,7 +120,7 @@
             @include('includes.totals_block',['indicador'=>$totals])
         @endforeach
     </div>
-    
+
     <!-- LOS 2 BLOQUES DEL MEDIO -->
     <div class="row justify-content-center my-3 px-2">
         <!-- GRAFICO DE BARRAS SOBRE VENTAS -->
@@ -159,166 +233,231 @@
             @endphp
             @include('includes.double_bars',['data'=>$data_doublebar, 'data_form'=>$data_form])
         </div>
-
-        <!-- AGENDA TAREAS POR HACER -->
-        <!--<div class="d-flex bg-primary col-lg-3 col-md-10 col-sm-12 mt-2" style="overflow: auto" id="dashboard-agenda">
-            <div class="m-auto text-white font-weight-bold">
-                AGENDA<br>AGENDA<br>AGENDA<br>AGENDA<br>AGENDA<br>AGENDA<br>AGENDA<br>AGENDA<br>AGENDA<br>AGENDA<br>
+        
+        <!-- AGENDA -->
+        <div class="col-lg-3 col-md-10 col-sm-12 mt-2 text-white">
+            <div class="m-auto font-weight-bold mb-3 text-dark">EVENTOS EN LA AGENDA CON:</div>
+            
+            <div class="info-box mb-3 tr-agenda" style="background-color: #FF3017; cursor: pointer;">
+                <span class="info-box-icon"><i class="fa fa-users"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Clientes</span>
+                    <span class="info-box-number">{{$agenda_cliente}}</span>
+                </div>
             </div>
-        </div>-->
-        <div class="col-lg-3 col-md-10 col-sm-12 mt-2">
-            <div class="m-auto font-weight-bold">
-                @php
-                    $data_list = array(
-                        "table-id" => "agenda",
-                        "title" => "Agenda",
-                        "registros" => 1,
-                        "filter" => false,
-                        "title-click" => false,
-                        "titulos" => array(
-                            array(
-                                "nombre" => "Fecha",
-                                "bd-name" => "start",
-                            ),
-                            array(
-                                "nombre" => "Título",
-                                "bd-name" => "title",
-                            ),
-                        ),
-                        "content" => array(),
-                    );
-                    
-                    foreach ($agendas as $agenda) {
-                    $data_content["id"] = $agenda->id;
-                    $data_content["dato-1"] = $agenda->start;
-                    $data_content["dato-2"] = $agenda->title;
-                    $data_content["dato-3"] = $agenda->title;
-                    $data_content["dato-4"] = $agenda->description;
 
-                    array_push($data_list["content"],$data_content);
-                }
-                @endphp
-                @include('includes.general_table',['data'=>$data_list])
+            <div class="info-box mb-3 tr-agenda" style="background-color: #FF8100; cursor: pointer;">
+                <span class="info-box-icon"><i class="fa fa-shopping-basket"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Proveedores</span>
+                    <span class="info-box-number">{{$agenda_proveedor}}</span>
+                </div>
+            </div>
+
+            <div class="info-box mb-3 tr-agenda" style="background-color: #245743; cursor: pointer;">
+                <span class="info-box-icon"><i class="fa fa-tags"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Trabajadores</span>
+                    <span class="info-box-number">{{$agenda_trabajador}}</span>
+                </div>
             </div>
         </div>
     </div>
 
-    @if(Auth::user()->permiso_venta)
-    <!-- LOS 2 BLOQUES DE ABAJO -->
+    <!-- LOS BLOQUES DE ABAJO -->
     <div class="row justify-content-center my-3 px-2">
-        <!-- TOP 5 DESPACHOS POR HACER -->
-        <div class="col-lg-6 col-md-10 col-sm-12 mt-2">
-            <div class="m-auto font-weight-bold">
-            @php
-                $data_list = array(
-                    "table-id" => "despacho-cliente",
-                    "title" => $despachos ? "Ultimos ".count($despachos)." despachos pendientes:" : "Despachos pendientes:",
-                    "registros" => 1,
-                    "filter" => false,
-                    "title-click" => false,
-                    "titulos" => array(
-                        array(
-                            "nombre" => "Código",
-                            "bd-name" => "nombre",
-                        ),
-                        array(
-                            "nombre" => "Cliente",
-                            "bd-name" => "rif_cedula",
-                        ),
-                        array(
-                            "nombre" => "Fecha de Venta",
-                            "bd-name" => "telefono",
-                        ),
-                        array(
-                            "nombre" => "Fecha de Despacho",
-                            "bd-name" => "correo",
-                        ),
-                    ),
-                    "content" => array(),
-                );
+        <!-- TOP 5 DESPACHOS Y CUENTAS POR HACER Y COBRAR -->
+        @if(Auth::user()->permiso_venta)
+        <div class="{{ Auth::user()->permiso_logistica ? 'col-lg-9' : 'col-lg-12' }} col-md-10 col-sm-12 mt-2">
+            <!-- TOP 5 DESPACHOS POR HACER -->
+            <div class="card">
+                <div class="card-header py-3 border-transparent">
+                    <h6 class="my-auto font-weight-bold" style="color: #333333; letter-spacing: 1px">DESPACHOS PENDIENTES</h6>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table m-0">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Cliente</th>
+                                    <th>Fecha de Despacho</th>
+                                    <th>Despachador</th>
+                                    <th>Nota</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $existencia = false @endphp
+                                @foreach($despachos as $row)
+                                    @if($row->venta)
+                                        @php $existencia = true @endphp
+                                        <tr>
+                                            <td><a href="{{ route('detail-despacho', ['id' => $row->id]) }}">{{$row->id}}</a></td>
+                                            <td>{{$row->venta->cliente->nombre}}</td>
+                                            <td>{{$row->fecha}}</td>
+                                            <td>{{$row->trabajador->nombre. " " .$row->trabajador->apellido}}</td>
+                                            <td>{{$row->nota}}</td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                                @if(!$existencia)
+                                    <tr>
+                                        <td colspan="5">No hay ningun despacho pendiente</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.table-responsive -->
+                </div>
+                <!-- /.card-body -->
+                <div class="card-footer clearfix">
+                    <a href="{{ route('list-despachos') }}" class="btn btn-sm btn-secondary float-right">Ver todos los despachos</a>
+                </div>
+                <!-- /.card-footer -->
+            </div>
 
-                $data_content = array(
-                    "id" => 3,
-                    "dato-1" => "3",
-                    "dato-2" => "Excelsior Gama",
-                    "dato-3" => "28-06-1996",
-                    "dato-4" => "01-07-1996",
-                );
-
-                foreach ($despachos as $despacho) {
-                    $data_content["id"] = $despacho->id;
-                    $data_content["dato-1"] = $despacho->id;
-                    $data_content["dato-2"] = $despacho->venta->cliente->nombre;
-                    $data_content["dato-3"] = $despacho->venta->fecha;
-                    $data_content["dato-4"] = $despacho->fecha;
-
-                    array_push($data_list["content"],$data_content);
-                }
-            @endphp
-            @include('includes.general_table',['data'=>$data_list])
+            <!-- TOP 5 CUENTA POR COBRAR PENDIENTE -->
+            <div class="card mt-4">
+                <div class="card-header py-3 border-transparent">
+                    <h6 class="my-auto font-weight-bold" style="color: #333333; letter-spacing: 1px">ULTIMAS VENTAS CON PAGOS PENDIENTES</h6>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table m-0">
+                            <thead>
+                                <tr>
+                                    <th>Venta ID</th>
+                                    <th>Cliente</th>
+                                    <th>Monto</th>
+                                    <th>Fecha</th>
+                                    <th>Estatus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php  $existencia=false; @endphp
+                                @foreach($cuentas as $row)
+                                    @php
+                                        $existencia = true; 
+                                        if( strtotime($row->fecha."+ ".$row->credito." days") - strtotime(date("d-m-Y")) > 3*86400){
+                                            $estado = "Pendiente";
+                                            $color = "badge-warning";
+                                        }
+                                        else{
+                                            if( strtotime($row->fecha."+ ".$row->credito." days") - strtotime(date("d-m-Y")) > 0*86400){
+                                                $estado = "Por Caducar";
+                                                $color = "badge-danger";
+                                            }
+                                            else{
+                                                $estado = "Caducado";
+                                                $color = "badge-danger";
+                                            }
+                                        }
+                                    @endphp
+                                    <tr>
+                                        <td><a href="{{ route('detail-venta', ['id' => $row->id]) }}">{{$row->id}}</a></td>
+                                        <td>{{$row->cliente->nombre}}</td>
+                                        <td>{{number_format($row->monto,2, ",", ".")}} Bs</td>
+                                        <td>{{$row->fecha}}</td>
+                                        <td><span class="badge {{$color}}">{{$estado}}</span></td>
+                                    </tr>
+                                @endforeach
+                                @if(!$existencia)
+                                    <tr>
+                                        <td colspan="5">No hay ninguna cuenta pendiente</td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.table-responsive -->
+                </div>
+                <!-- /.card-body -->
+                <div class="card-footer clearfix">
+                    <a href="{{ route('list-cuentas') }}" class="btn btn-sm btn-secondary float-right">Ver las cuentas por cobrar</a>
+                </div>
+                <!-- /.card-footer -->
             </div>
         </div>
+        @endif
 
-        <!-- TOP 5 CUENTAS POR COBRAR PENDIENTES -->
-        <div class="col-lg-6 col-md-10 col-sm-12 mt-2">
-            <div class="m-auto font-weight-bold">
-            @php
-                $data_list = array(
-                    "table-id" => "venta-pagar",
-                    "title" => $cuentas ? "Ultimas ".count($cuentas)." cuentas por cobrar pendientes:" : "Cuentas por cobrar pendientes:",
-                    "registros" => 1,
-                    "filter" => false,
-                    "title-click" => false,
-                    "titulos" => array(
-                        array(
-                            "nombre" => "Cliente",
-                            "bd-name" => "id_cliente",
-                        ),
-                        array(
-                            "nombre" => "Monto",
-                            "bd-name" => "monto",
-                        ),
-                        array(
-                            "nombre" => "Fecha",
-                            "bd-name" => "fecha",
-                        ),
-                        array(
-                            "nombre" => "Credito",
-                            "bd-name" => "credito",
-                        ),
-                        array(
-                            "nombre" => "Correo",
-                            "bd-name" => "Contactar",
-                        ),
-                    ),
-                    "content" => array(),
-                );
+        <!-- INVENTARIO Y SUMINISTRO PROXIMO A QUEDARSE SIN EXITENCIA -->
+        @if(Auth::user()->permiso_logistica)
+        <div class="{{ Auth::user()->permiso_venta ? 'col-lg-3' : 'col-lg-12' }} col-md-10 col-sm-12 mt-2">
+            <!-- INVENTARIO -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title my-auto font-weight-bold" style="color: #333333; letter-spacing: 1px">INVENTARIO CERCA DE INEXISTENCIA</h6>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body p-0">
+                    <ul class="products-list product-list-in-card pl-2 pr-2">
+                        @php $existencia = false @endphp
+                        @foreach($d_inventario as $row)
+                            @if($row['cantidad'] < 10)
+                            @php $existencia = true @endphp
+                            <li class="item">
+                                <div class="product-info">
+                                    <a class="product-title">{{$row['nombre']}}
+                                        <span class="badge {{ $row['cantidad'] == 0 ? 'badge-danger' : 'badge-warning'}} float-right">{{$row['cantidad']}}</span>
+                                    </a>
+                                    <span class="product-description">{{$row['descripcion']}}</span>
+                                </div>
+                            </li>
+                            @endif
+                        @endforeach
 
-                $data_content = array(
-                    "id" => 1,
-                    "dato-1" => "Excelsior Gama",
-                    "dato-2" => "25869,123 Bs",
-                    "dato-3" => "28-06-1996",
-                    "dato-4" => "30 días",
-                    "contact-5" => "andresramirez2025@gmail.com",
-                );
+                        @if(!$existencia)
+                            <li class="p-2">Todos los productos en orden</li>
+                        @endif
+                    </ul>
+                </div>
+              <!-- /.card-body -->
+                <div class="card-footer text-center">
+                    <a href="{{ route('list-inventario') }}" class="uppercase">Ver el Inventario</a>
+                </div>
+              <!-- /.card-footer -->
+            </div>
 
-                foreach ($cuentas as $sell) {
-                    $data_content["id"] = $sell->id;
-                    $data_content["dato-1"] = $sell->cliente->nombre;
-                    $data_content["dato-2"] = $sell->monto." Bs";
-                    $data_content["dato-3"] = $sell->fecha;
-                    $data_content["dato-4"] = $sell->credito." días";
-                    $data_content["contact-5"] = $sell->cliente->correo;
+            <!-- SUMINISTRO -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title my-auto font-weight-bold" style="color: #333333; letter-spacing: 1px">SUMINISTRO CERCA DE INEXISTENCIA</h6>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body p-0">
+                    <ul class="products-list product-list-in-card pl-2 pr-2">
+                        @php $existencia = false @endphp
+                        @foreach($d_suministro as $row)
+                            @if($row['cantidad'] < 10)
+                            @php $existencia = true @endphp
+                            <li class="item">
+                                <div class="product-info">
+                                    <a class="product-title">{{$row['nombre']}}
+                                        <span class="badge {{ $row['cantidad'] == 0 ? 'badge-danger' : 'badge-warning'}} float-right">{{$row['cantidad']}}</span>
+                                    </a>
+                                    <span class="product-description">{{$row['descripcion']}}</span>
+                                </div>
+                            </li>
+                            @endif
+                        @endforeach
 
-                    array_push($data_list["content"],$data_content);
-                }
-            @endphp
-            @include('includes.general_table',['data'=>$data_list])
+                        @if(!$existencia)
+                            <li class="p-2">Todos los productos en orden</li>
+                        @endif
+                    </ul>
+                </div>
+                <!-- /.card-body -->
+                <div class="card-footer text-center">
+                    <a href="{{ route('list-suministro') }}" class="uppercase">Ver el Suministro</a>
+                </div>
+                <!-- /.card-footer -->
             </div>
         </div>
+        @endif
     </div>
-    @endif
 
         </div>
       </div>
@@ -340,33 +479,17 @@
             $(".container-forms").css("border","0px");
             $(".container-forms").css("box-shadow","none");
 
-        //BORRAR TODOS LOS BOTONES DE LA TABLA DE DESPACHOS Y CUENTAS POR COBRAR
-            $(".num-reg-table").remove();
-            $(".button-table-options").remove();
-
-        //BORRAR LA PAGINACIÓN
-            $(".pagination-table").remove();
-
-        //ELIMINAR LOS CHECK BUTTONS
-            $("#th-venta-pagar").remove();
-            $(".td-venta-pagar").remove();
-
-            $("#th-agenda").remove();
-            $(".td-agenda").remove();
-
-            $("#th-despacho-cliente").remove();
-            $(".td-despacho-cliente").remove();
-
         //REDIRECCIÓN A SUS RESPECTIVAS VISTAS
             //CUENTAS POR PAGAR
             $(".tr-venta-pagar").click(function() {
                 location.href = "{{ route('list-cuentas') }}";
             });
 
-            //Agenda/Calendario
+            //CALENDARIO
             $(".tr-agenda").click(function() {
                 location.href = "{{ url('Calendario') }}";
             });
+
             //DESPACHOS
             $(".tr-despacho-cliente").click(function() {
                 location.href = "{{ route('list-despachos') }}";

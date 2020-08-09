@@ -1,3 +1,29 @@
+<style>
+    @media (max-width: 860px) {  
+        #horizontalchart{{ $data['canva'] }}{
+            height: 50px;
+        }
+    }
+
+    @media (max-width: 550px) {  
+        #horizontalchart{{ $data['canva'] }}{
+            height: 40px;
+        }
+    }
+
+    @media (max-width: 500px) {  
+        #horizontalchart{{ $data['canva'] }}{
+            height: 30px;
+        }
+    }
+
+    @media (max-width: 400px) {  
+        #horizontalchart{{ $data['canva'] }}{
+            height: 20px;
+        }
+    }
+</style>
+
 <div class="rounded" id="indicator-es">
     <div class="card-header py-3 d-flex">
         <h6 class="my-auto font-weight-bold float-left" style="color: #333333; letter-spacing: 1px">{{ $data['texto'] }}</h6>
@@ -19,24 +45,24 @@
         <input type="hidden" name="{{ $data['canva'] }}" class="canvadhbid" value="horizontalchart{{ $data['canva'] }}">
 
         <!-- VALORES QUE RECOJO PARA EL CHART -->
-        @foreach ($data['labels'] as $labels)
-            <input type="hidden" class="canvahdblabels{{ $data['canva'] }}" value="{{ $labels }}">
-        @endforeach
+            @foreach ($data['labels'] as $labels)
+                <input type="hidden" class="canvahdblabels{{ $data['canva'] }}" value="{{ $labels }}">
+            @endforeach
 
         <!-- BAR 1 -->
-        <input type="hidden" class="canvahdblabel1{{ $data['canva'] }}" value="{{ $data['bar-label-1'] }}">
-        @foreach ($data['bar-datos-1'] as $datos)
-            <input type="hidden" class="canvahdbdata1{{ $data['canva'] }}" value="{{ $datos }}">
-        @endforeach
-        <input type="hidden" class="canvahdbbgcolor1{{ $data['canva'] }}" value="{{ $data['bar-bgcolors-1'] }}">
-        <input type="hidden" class="canvahdbbdcolor1{{ $data['canva'] }}" value="{{ $data['bar-brcolors-1'] }}">
+            <input type="hidden" class="canvahdblabel1{{ $data['canva'] }}" value="{{ $data['bar-label-1'] }}">
+            @foreach ($data['bar-datos-1'] as $datos)
+                <input type="hidden" class="canvahdbdata1{{ $data['canva'] }}" value="{{ $datos }}">
+            @endforeach
+            <input type="hidden" class="canvahdbbgcolor1{{ $data['canva'] }}" value="{{ $data['bar-bgcolors-1'] }}">
+            <input type="hidden" class="canvahdbbdcolor1{{ $data['canva'] }}" value="{{ $data['bar-brcolors-1'] }}">
 
-        <!-- BAR 2 -->
-        <input type="hidden" class="canvahdblabel2{{ $data['canva'] }}" value="{{ $data['bar-label-2'] }}">
-        @foreach ($data['bar-datos-2'] as $datos)
-            <input type="hidden" class="canvahdbdata2{{ $data['canva'] }}" value="{{ $datos }}">
-        @endforeach
-        <input type="hidden" class="canvahdbbgcolor2{{ $data['canva'] }}" value="{{ $data['bar-bgcolors-2'] }}">
-        <input type="hidden" class="canvahdbbdcolor2{{ $data['canva'] }}" value="{{ $data['bar-brcolors-2'] }}">
+            <!-- BAR 2 -->
+            <input type="hidden" class="canvahdblabel2{{ $data['canva'] }}" value="{{ $data['bar-label-2'] }}">
+            @foreach ($data['bar-datos-2'] as $datos)
+                <input type="hidden" class="canvahdbdata2{{ $data['canva'] }}" value="{{ $datos }}">
+            @endforeach
+            <input type="hidden" class="canvahdbbgcolor2{{ $data['canva'] }}" value="{{ $data['bar-bgcolors-2'] }}">
+            <input type="hidden" class="canvahdbbdcolor2{{ $data['canva'] }}" value="{{ $data['bar-brcolors-2'] }}">
     </div>
 </div>

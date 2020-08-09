@@ -50,8 +50,19 @@
 	      	    $("."+id).addClass('icono_color');
 	        });
 
-	        $("#logo-imagen").click(function(event) {
+	        $(".logo-imagen").click(function(event) {
 	      	    location.href = "{{ url('/') }}";
+            });
+
+            //SCRIPT DE LA BARRA DE NAVEGACION CUANDO EXISTE RESPONSIVIDAD
+            $(".menu_navegacion").click(function(event) {
+                $(".nav-side-menu").fadeIn(500);
+                $("#fade").removeClass('d-none');
+            });
+
+            $("#cerrar_menu").click(function(event) {
+                $(".nav-side-menu").fadeOut(500);
+                $("#fade").addClass('d-none');
             });
 	    });
         
@@ -81,22 +92,44 @@
                 case "calendario":
                     location.href = "{{ url('/Calendario') }}";
                     break;
+                case "configuracion":
+                    location.href = "{{ route('perfil') }}";
+                    break;
+                case "cerrar_sesion":
+                    location.href = "{{ route('logout') }}";
+                    break;
                 default:
                     location.href = "{{ url('/') }}";
                     break;
             }
         }
-  	</script>
+    </script>
+      
+    <style>
+        #fade{
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.3);
+            position: fixed;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 11
+		}
+    </style>
 
 </head>
 <body>
+    <div id="fade" class="d-none"></div>
     <div id="app">
      
     <!-- BARRA DE NAVEGACION -->
         <div class="nav-side-menu" id="barra_navegacion">
             <div class="brand py-2">
+                <button id="cerrar_menu" type="button" class="eliminar-2 float-left my-auto toggle-btn" aria-label="Close">
+				    <span aria-hidden="true">&times;</span>
+				</button>
                 <div class="m-auto text-center row justify-content-center py-3" style="cursor: pointer">
-                    <img src="{{ asset('img/logo.png')}}" class="img-fluid" width="125" height="125" id="logo-imagen"><br>
+                    <img src="{{ asset('img/logo.png')}}" class="img-fluid logo-imagen" width="125" height="125"><br>
                 </div>
             </div>
             <div class="menu-list">
@@ -169,6 +202,21 @@
                                 <span>CALENDARIO</span>
                             </a>
                         </li>
+                        <li class="py-2 mx-4 icono_head responsive_menu" id="icon" onClick="redirect('configuracion')">
+                            <a>
+                                <i class="icon icono_color fa fa-gear fa-lg"></i>
+                                <i class="icon icono_color fa fa-caret-right fa-lg"></i>
+                                <span>CONFIGURACIÓN</span>
+                            </a>
+                        </li>
+                        <li class="py-2 mx-4 icono_head responsive_menu" id="icon" onclick="event.preventDefault();
+                                    document.getElementById('logout-form').submit();">
+                            <a>
+                                <i class="icon icono_color fa fa-sign-out fa-lg"></i>
+                                <i class="icon icono_color fa fa-caret-right fa-lg"></i>
+                                <span>CERRAR SESIÓN</span>
+                            </a>
+                        </li>
                 </ul>
             </div>
         </div>
@@ -177,6 +225,13 @@
     <!-- BARRA SUPERIOR -->
         <nav class="navbar navbar-expand-md navbar-light shadow-sm py-3" id="main" style="background-color: #C47E4D">
             <div class="container">
+                <div class="mx-3 toggle-btn text-center">
+                    <div class="text-white menu_navegacion r-menu" style="cursor: pointer">
+                        <i class="fa fa-bars d-block icon-menu"></i>
+                        <span class="d-block">Menu</span>
+                    </div>
+                </div>
+
                 <a class="navbar-brand text-white">
                     @yield('titulo')
                 </a>
@@ -192,7 +247,7 @@
                             </a>
                             
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                            @if(Auth::user()->permiso_venta)
+                            @if(Auth::user()->permiso_venta && Session::get('cobrar-expirar')>0)
                                 <a class="dropdown-item" href="{{ route('list-cuentas') }}">
                                     <span class="caret">{{Session::get('cobrar-expirar')}}</span>
                                     <i class="icon fa fa-exclamation-circle fa-lg mx-1" style="color: #FFD70D;"></i>
@@ -200,18 +255,22 @@
                                 </a>
                             @endif
                             @if(Auth::user()->permiso_logistica)
+                                @if(Session::get('inventario-expirar')>0)
                                 <a class="dropdown-item" href="{{ route('list-inventario') }}">
                                     <span class="caret">{{Session::get('inventario-expirar')}}</span>
                                     <i class="icon fa fa-exclamation-circle fa-lg mx-1" style="color: #FFD70D;"></i>
                                     <span>Inventario Proximo a Expirarse</span>
                                 </a>
+                                @endif
+                                @if(Session::get('suministro-expirar')>0)
                                 <a class="dropdown-item" href="{{ route('list-suministro') }}" style="border-bottom: 0.5px solid grey">
                                     <span class="caret">{{Session::get('suministro-expirar')}}</span>
                                     <i class="icon fa fa-exclamation-circle fa-lg mx-1" style="color: #FFD70D;"></i>
                                     <span>Suministro Proximo a Expirarse</span>
                                 </a>
+                                @endif
                             @endif
-                            @if(Auth::user()->permiso_venta)
+                            @if(Auth::user()->permiso_venta && Session::get('cobrar-caducar')>0)
                                 <a class="dropdown-item" href="{{ route('list-cuentas') }}">
                                     <span class="caret">{{Session::get('cobrar-caducar')}}</span>
                                     <i class="icon text-danger fa fa-exclamation-triangle fa-lg mx-1"></i>
@@ -219,15 +278,25 @@
                                 </a>
                             @endif
                             @if(Auth::user()->permiso_logistica)
+                                @if(Session::get('inventario-caducar')>0)
                                 <a class="dropdown-item" href="{{ route('list-inventario') }}">
                                     <span class="caret">{{Session::get('inventario-caducar')}}</span>
                                     <i class="icon text-danger fa fa-exclamation-triangle fa-lg mx-1"></i>
                                     <span>Inventarios Expirados</span>
                                 </a>
+                                @endif
+                                @if(Session::get('suministro-caducar')>0)
                                 <a class="dropdown-item" href="{{ route('list-suministro') }}">
                                     <span class="caret">{{Session::get('suministro-caducar')}}</span>
                                     <i class="icon text-danger fa fa-exclamation-triangle fa-lg mx-1"></i>
                                     <span>Suministros Expirados</span>
+                                </a>
+                                @endif
+                            @endif
+
+                            @if(Session::get('notificaciones')<=0)
+                                <a class="dropdown-item" href="">
+                                    <span>Inventario, Cuentas y Suministro en Orden!</span>
                                 </a>
                             @endif
                             </div>
@@ -238,13 +307,17 @@
                         <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link dropdown-toggle text-white" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                 <span class="caret"></span>
-                                {{ Auth::user()->name }} 
+                                <span id="user-text-name">{{ Auth::user()->name }}</span> 
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                                 <a class="dropdown-item" href="{{ route('perfil') }}">
                                     <i class="icon icono_color fa fa-gear fa-lg" style="color: #C47E4D"></i>
                                     <span>{{ __('Configuración') }}</span>
+                                </a> 
+                                <a class="dropdown-item" href="{{ route('manual-usuario') }}">
+                                    <i class="icon icono_color fa fa-file-text fa-lg" style="color: #C47E4D"></i>
+                                    <span>{{ __('Manuales de Usuario') }}</span>
                                 </a>  
                                 <a class="dropdown-item" href="{{ route('logout') }}"
                                     onclick="event.preventDefault();
@@ -258,6 +331,20 @@
                             </div>
                         </li>
                     </ul>
+                </div>
+
+                <div class="toggle-btn text-center">
+                    <div class="row justify-content-center header-responsive">
+                        <div class="align-self-center text-white menu_navegacion mx-2">
+                            <i class="fa fa-bars d-block icon-menu"></i>
+                            <span class="d-block">Menu</span>
+                        </div>
+                        <div class="mx-2">
+                            <img src="{{ asset('img/logo-responsive.png')}}" class="img-fluid logo-imagen" width="60" height="60">
+                        </div>
+                    </div>
+
+                    <img src="{{ asset('img/logo-responsive.png')}}" class="img-fluid logo-imagen r-logo" width="60" height="60">
                 </div>
             </div>
         </nav>

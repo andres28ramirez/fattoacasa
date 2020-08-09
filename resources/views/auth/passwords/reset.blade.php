@@ -47,10 +47,10 @@
 
                         <div class="wrap-input100 validate-input m-b-26" data-validate="Es requerido ingresar un correo">
                             <span class="label-input100">{{ __('Dirección de correo') }}</span>
-                            <input id="email" type="email" class="input-100 form-control @error('email') is-invalid @enderror" name="email"  value="{{ $email ?? old('email') }}" autocomplete="email" autofocus>
+                            <input id="email" type="email" class="input-100 form-control @error('email') is-invalid @enderror" name="email"  value="{{ $email ?? old('email') }}" autocomplete="email" autofocus readonly>
                             @error('email')
                                     <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
+                                        <strong>{{-- $message --}}El token para resetar la contraseña ha expirado.</strong>
                                     </span>
                             @enderror
                         </div>
@@ -60,7 +60,7 @@
                             <input id="password" type="password" class="input-100 form-control @error('password') is-invalid @enderror" name="password" autocomplete="new-password">
                             @error('password')
                                 <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
+                                    <strong>{{-- $message --}}La confirmación de contraseña no coincide.</strong>
                                 </span>
                             @enderror
                         </div>

@@ -21,6 +21,9 @@
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('list-pagos')}}">Pagos Recibidos</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-secondary" href="{{ route('discard-ventas')}}">Ventas Descartadas</a>
+        </li>
     </ul>
 @endsection
 
@@ -130,6 +133,11 @@
     </style>
 
     <div class="row justify-content-center my-3 px-2">
+        
+        <div class="col-12 d-none" id="referencia-alerta">
+            <h3 class="text-center alert alert-danger">La referencia de pago ya se encuentra registrada!</h3>
+        </div>
+
         @php
             if($persona)
                 $filtrado = true;
@@ -197,7 +205,7 @@
                 $data_content["id"] = $sell->id;
                 $data_content["dato-1"] = $sell->id;
                 $data_content["dato-2"] = $sell->cliente->nombre;
-                $data_content["dato-3"] = $sell->monto." Bs";
+                $data_content["dato-3"] = number_format($sell->monto,2, ",", ".")." Bs";
                 $data_content["dato-4"] = $sell->fecha;
                 $data_content["dato-5"] = $sell->credito." días";
 
@@ -365,6 +373,10 @@
                                     "title" => "Selecciona un Banco",
                                     "options" => array(
                                         array(
+                                            "value" => "Otro",
+                                            "nombre" => "Otro",
+                                        ),
+                                        array(
                                             "value" => "Bancamiga",
                                             "nombre" => "Bancamiga",
                                         ),
@@ -463,13 +475,25 @@
                                 ),
                                 array(
                                     "component-type" => "input",
-                                    "label-name" => "Núm. Referencia del Pago",
+                                    "label-name" => "Núm. Referencia del Pago (*)",
                                     "icon" => "fa-money",
                                     "type" => "text",
                                     "id_name" => "form-referencia",
                                     "form_name" => "referencia",
                                     "placeholder" => "Ingresa la referencia del pago",
                                     "validate" => "Referencia es requerida",
+                                    "bd-error" => "LO QUE SEA",
+                                    "requerido" => "req-false",
+                                ),
+                                array(
+                                    "component-type" => "input",
+                                    "label-name" => "Nota de Pago",
+                                    "icon" => "fa-bookmark",
+                                    "type" => "text",
+                                    "id_name" => "form-nota-pago",
+                                    "form_name" => "nota_pago",
+                                    "placeholder" => "Ingrese la nota de pago",
+                                    "validate" => "Nota es requerida",
                                     "bd-error" => "LO QUE SEA",
                                     "requerido" => "req-true",
                                 ),
@@ -541,22 +565,48 @@
         //ELIMINO EL SOMBRIADO DEL FORMULARIO Y LOS BORDES
             $(".container-forms").css("border","0px");
             $(".container-forms").css("box-shadow","none");
+        
+        //ALERTA PARA CUANDO LA REFERENCIA DE PAGO ESTE DUPLICADA
+            if ( $(".invalid-feedback").length > 0 ) {
+                $("#referencia-alerta").removeClass("d-none");
+            }
 
         //EVENTO PARA EL CORREO DE CONTACTAR A CLIENTE
-            function Enviarinformacion(accion){
+            function Enviarinformacion(accion,correo){
                 $.ajax(
                     {
                         type: "POST",
                         url:"{{ url('mail/send') }}"+accion,
                         data: {
                             "_token": $("meta[name='csrf-token']").attr("content")
+                        },
+                        beforeSend: function(){
+                            swal({
+                                title: "Enviando Correo, porfavor espere...",
+                                closeOnClickOutside: false,
+                                button: 'Aceptar',
+                            });
+                            $(".swal-title").prepend('<i class="fa fa-3x fa-lg fa-spinner fa-spin d-block p-4" style="color: #028936"></i>');
+                            $(".swal-button").addClass("bg-secondary");
                         },                
                         success: function(msg){
                             console.log(msg);
-                            //$('#exampleModal').modal('toggle');
+                            swal({
+                                title: 'Se ha enviado el correo de forma exitosa a ' + correo,
+                                icon: 'success',
+                                closeOnClickOutside: false,
+                                button: 'Aceptar',
+                            });
+                            $(".swal-button--confirm").addClass('bg-success');
                         },
                         error: function(){ 
-                            alert("Hay un error");
+                            swal({
+                                title: 'No se ha podido enviar el correo, intentelo más tarde...',
+                                icon: 'error',
+                                closeOnClickOutside: false,
+                                button: 'Aceptar',
+                            });
+                            $(".swal-button--confirm").addClass('bg-danger');
                         },
                     }
                 );
@@ -564,8 +614,15 @@
             
             $(".email-send").click(function() {
                 var correo = $(this).children("input").val();
-                Enviarinformacion('/'+$(this).parent().attr("id"));
-                alert('Se ha enviado el correo a ' + correo);
+                Enviarinformacion('/'+$(this).parent().attr("id"),correo);
+                /* swal({
+                    title: 'Se ha enviado el correo de forma exitosa a ' + correo,
+                    icon: 'success',
+                    closeOnClickOutside: false,
+                    button: 'Aceptar',
+                });
+                $(".swal-button--confirm").addClass('bg-success'); */
+                //alert('Se ha enviado el correo a ' + correo);
             });
     </script>
 @endsection

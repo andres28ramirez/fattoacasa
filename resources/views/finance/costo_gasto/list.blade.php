@@ -16,7 +16,7 @@
             <a class="nav-link text-dark active font-weight-bold" href="{{ route('list-gasto-costo') }}">Gastos y Costos</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Nómina</a>
+            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Personal</a>
         </li>
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('finance-pagos') }}">Pagos</a>
@@ -204,7 +204,7 @@
                 $data_content["dato-1"] = $row->id;
                 $data_content["dato-2"] = $row->tipo;
                 $data_content["dato-3"] = $row->descripcion;
-                $data_content["dato-4"] = $row->monto." Bs";
+                $data_content["dato-4"] = number_format($row->monto,2, ",", ".")." Bs";
                 $data_content["dato-5"] = $row->fecha;
 
                 array_push($data_list["content"],$data_content);

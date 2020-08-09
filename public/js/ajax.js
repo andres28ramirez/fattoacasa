@@ -179,6 +179,7 @@ const ajaxDesperdicio = (id,url,form,form_data,spinner) => {
                 html +=     '<input type="hidden" id="producto-id-'+cantidad+'" value="'+valor["id"]+'">';
                 html +=     '<div class="col-lg p-0">'; //Producto
                 html +=         '<div class="input-group validate-input" data-validate="Producto es requerido">';
+                html +=             '<label class="rl-producto align-self-center col-5"><strong>Producto:</strong></label>';
                 html +=             '<input class="form-control border-right req-true" style="height: calc(2.19rem + 10px)" ';
                 html +=                 'type="text" id="form-producto-'+cantidad+'" name="form-producto-'+cantidad+'" ';
                 html +=                  'value="'+valor["nombre"]+'" readonly>';
@@ -186,6 +187,7 @@ const ajaxDesperdicio = (id,url,form,form_data,spinner) => {
                 html +=     '</div>';
                 html +=     '<div class="col-lg p-0">'; //CANTIDAD
                 html +=         '<div class="input-group validate-input" data-validate="Cantidad es requerida">';
+                html +=             '<label class="rl-cantidad align-self-center col-5"><strong>Cantidad:</strong></label>';
                 html +=             '<input class="form-control border-right border-left req-true" style="height: calc(2.19rem + 10px)" ';
                 html +=                 'type="text" id="form-cantidad-'+cantidad+'" name="form-cantiidad-'+cantidad+'" ';
                 html +=                 'value="'+valor["cantidad"]+'" readonly>';
@@ -193,12 +195,14 @@ const ajaxDesperdicio = (id,url,form,form_data,spinner) => {
                 html +=     '</div>';
                 html +=     '<div class="col-lg p-0">'; //DESPERDICIO
                 html +=         '<div class="input-group validate-input" data-validate="Cantidad es requerida">';
+                html +=             '<label class="rl-desperdicio align-self-center col-5"><strong>Desperdicio:</strong></label>';
                 html +=             '<input class="form-control border-left req-true" style="height: calc(2.19rem + 10px)" ';
                 html +=                 'type="number" id="form-desperdicio-'+cantidad+'" name="form-desperdicio-'+cantidad+'" '; 
                 html +=                 'placeholder="Ingrese la cantidad de desperdicio" min="0" max="55" '; 
                 html +=                 'step="any" value="'+valor["desperdicio"]+'" onchange="verificar('+cantidad+')">';
                 html +=         '</div>';
                 html +=     '</div>';
+                html +=     '<div style="border-bottom: 1px solid #C3CAD6;" class="w-100 my-3 d-separator"></div>';
                 html += '</div>';
                 $("#"+form_data).append(html);
                 cantidad++;

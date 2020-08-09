@@ -51,7 +51,10 @@ class LogisticaController extends Controller
         }
 
         //Para colocar el listado de productos al añadir o editar que vengan de suministro
-        $products = Producto::all();
+        $pr_final = Producto_Receta::select('id_producto_final')->get();
+
+        $products = Producto::whereIn('id',$pr_final)->get();
+        //$products = Producto::all();
 
         return view('logistics.list_inventario', [
             'inventario' => $inventario,
@@ -112,7 +115,10 @@ class LogisticaController extends Controller
         $providers = Proveedor::all();
 
         //Para colocar el listado de productos al añadir o editar
-        $products = Producto::all();
+        $pr_final = Producto_Receta::select('id_producto_final')->get();
+
+        $products = Producto::whereNotIn('id',$pr_final)->get();
+        //$products = Producto::all();
 
         return view('logistics.list_suministro', [
             'suministro' => $suministro,
@@ -235,7 +241,7 @@ class LogisticaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('list-producto')->with('message', 'Producto Subido Correctamente');
+            return redirect()->route('list-producto')->with('message', 'Producto añadido Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -302,7 +308,7 @@ class LogisticaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('list-suministro')->with('message', 'Producto Subido Correctamente');
+            return redirect()->route('list-suministro')->with('message', 'Producto añadido Exitosamente');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -416,7 +422,7 @@ class LogisticaController extends Controller
                 //Grabamos el reporte de almacenamiento en el sistema
                 $report->save();
                 DB::commit();
-                return redirect()->route('list-inventario')->with('message', 'Producto Subido Correctamente');
+                return redirect()->route('list-inventario')->with('message', 'Producto añadido Exitosamente');
             }
             else{
                 DB::rollback();
@@ -556,7 +562,7 @@ class LogisticaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('list-suministro')->with('message', 'Suministro Editado Correctamente');
+            return redirect()->route('list-suministro')->with('message', 'Suministro Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -600,29 +606,114 @@ class LogisticaController extends Controller
             $inventario->cantidad     = $cantidad;
             $inventario->expedicion   = $expedicion;
 
-            //Grabamos los cambios
-            $inventario->update();
+            //Quedara en true si al final todo fue correcto
+            $grabar = true;
+            
+            //Grabara todos los productos que le falte X cantidad
+            $restantes = array();
 
-            //Arreglo la variable session de inventario
-            if($past->expedicion || $inventario->expedicion)
-                $this->resetNotificationUpdate($past, $inventario, 'inventario');
+            //Acomodamos la cantidad que vamos a sumar o restar (si es negativo no necesito validar nada)
+            $cantidad = $cantidad - $past->cantidad;
+            
+            //Si es negativo me salto toda la validación y voy directo a arreglar suministro, sino tengo que validar
+            if($cantidad < 0){
+                //Buscamos el recetario del producto para arreglar el suministro
+                $producto = Producto::find($id_producto);
+                foreach($producto->receta as $one){
+                    $ing_id       = $one->id_ingrediente;
+                    $ing_cantidad = $one->cantidad * ($cantidad*-1);
+                    
+                    $sum_cantidad = Suministro::where('id_producto',$ing_id)->first();
+                    if($sum_cantidad){//Existe el producto por lo tanto solo le agrego al ultimo la cantidad
+                        $sum_cantidad->cantidad = $sum_cantidad->cantidad + $ing_cantidad;
+                        $sum_cantidad->update();
+                    }
+                    else{//Ya no existe el producto en suministro asi que genero uno nuevo
+                        $suministro = new Suministro();
+                        $suministro->id_proveedor = 1;
+                        $suministro->id_producto  = $ing_id;
+                        $suministro->precio       = 1;
+                        $suministro->cantidad     = $ing_cantidad;
+                        $suministro->expedicion   = null;
+                        $suministro->save();
+                    }
+                }
+            }
+            else if($cantidad > 0){    
+                //Buscamos el producto que queremos para revisar su receta
+                $producto = Producto::find($id_producto);
+                foreach($producto->receta as $one){
+                    $ing_id       = $one->id_ingrediente;
+                    $ing_cantidad = $one->cantidad * $cantidad;
+                    
+                    $sum_cantidad = Suministro::select(DB::raw('SUM(cantidad) as cantidad'))->where('id_producto',$ing_id)->groupBy('id_producto')->first();
+                    if($sum_cantidad){
+                        if($ing_cantidad - $sum_cantidad->cantidad <= 0){
+                            //Modificamos el suministro
+                            $modificar = true;
+                            $suministro = Suministro::where('id_producto',$ing_id)->orderBy('expedicion', 'asc')->get();
+                            foreach ($suministro as &$row){
+                                if($modificar){
+                                    if($ing_cantidad - $row->cantidad < 0){
+                                        $modificar = false;
+                                        $row->cantidad = $row->cantidad - $ing_cantidad;
+                                        $row->update();
+                                    }
+                                    else{
+                                        $ing_cantidad = $ing_cantidad - $row->cantidad;
+                                        $row->delete();
+                                        if($ing_cantidad == 0) $modificar = false;
+                                    }
+                                }
+                            }
+                        }
+                        else{
+                            $grabar = false;
+                            $producto_restante = array("nombre","cantidad");
+                            $producto_restante["nombre"] = $one->ingrediente->nombre;
+                            $producto_restante["cantidad"] = $ing_cantidad - $sum_cantidad->cantidad;
+                            array_push($restantes,$producto_restante);
+                        }
+                    }
+                    else{
+                        $grabar = false;
+                        $producto_restante = array("nombre","cantidad");
+                        $producto_restante["nombre"] = $one->ingrediente->nombre;
+                        $producto_restante["cantidad"] = $ing_cantidad;
+                        array_push($restantes,$producto_restante);
+                    }
+                }
+            }
 
-            //Grabamos ahora el reporte de la edicion del producto
-            //Conseguimos el usuario
-            $user = \Auth::user();
+            if($grabar){
+                //Grabamos los cambios
+                $inventario->update();
 
-            //Asignar los valores al nuevo objeto de reporte
-            $report = new Incidencia();
-            $report->id_user     = $user->id;
-            $report->name        = $user->name;
-            $report->activity    = "Módulo Logística";
-            $report->description = "Inventario Editado - Código (".$id.")";
+                //Arreglo la variable session de inventario
+                    if($past->expedicion || $inventario->expedicion)
+                    $this->resetNotificationUpdate($past, $inventario, 'inventario');
 
-            //Grabamos el reporte de almacenamiento en el sistema
-            $report->save();
+                //Grabamos ahora el reporte de la edicion del producto
+                //Conseguimos el usuario
+                $user = \Auth::user();
 
-            DB::commit();
-            return redirect()->route('list-inventario')->with('message', 'Inventario Editado Correctamente');
+                //Asignar los valores al nuevo objeto de reporte
+                $report = new Incidencia();
+                $report->id_user     = $user->id;
+                $report->name        = $user->name;
+                $report->activity    = "Módulo Logística";
+                $report->description = "Inventario Editado - Código (".$id.")";
+
+                //Grabamos el reporte de almacenamiento en el sistema
+                $report->save();
+
+                DB::commit();
+                return redirect()->route('list-inventario')->with('message', 'Inventario Editado Exitosamente!');
+            }
+            else{
+                DB::rollback();
+                return redirect()->route('list-inventario')->with('fallo-edit', $restantes);
+            }
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -682,7 +773,7 @@ class LogisticaController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-producto', ['id' => $producto->id])->with('message', 'Producto Editado Correctamente');
+            return redirect()->route('detail-producto', ['id' => $producto->id])->with('message', 'Producto Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -779,6 +870,8 @@ class LogisticaController extends Controller
                 $inventario = Inventario::find($valor);
 
                 $codigo = $inventario->id;
+                $codigo_pro = $inventario->id_producto;
+                $cantidad = $inventario->cantidad;
                 //Elimino inventario
                 $inventario->delete();
                 array_push($valores, $valor);
@@ -787,6 +880,29 @@ class LogisticaController extends Controller
                 if($inventario->expedicion)
                     $this->resetNotification($inventario,'delete','inventario');
                 
+                //Acomodamos el suministro
+                //Buscamos el recetario del producto para arreglar el suministro
+                $producto = Producto::find($codigo_pro);
+                foreach($producto->receta as $one){
+                    $ing_id       = $one->id_ingrediente;
+                    $ing_cantidad = $one->cantidad * $cantidad;
+                    
+                    $sum_cantidad = Suministro::where('id_producto',$ing_id)->first();
+                    if($sum_cantidad){//Existe el producto por lo tanto solo le agrego al ultimo la cantidad
+                        $sum_cantidad->cantidad = $sum_cantidad->cantidad + $ing_cantidad;
+                        $sum_cantidad->update();
+                    }
+                    else{//Ya no existe el producto en suministro asi que genero uno nuevo
+                        $suministro = new Suministro();
+                        $suministro->id_proveedor = 1;
+                        $suministro->id_producto  = $ing_id;
+                        $suministro->precio       = 1;
+                        $suministro->cantidad     = $ing_cantidad;
+                        $suministro->expedicion   = null;
+                        $suministro->save();
+                    }
+                }
+
                 //GRABAMOS EL REPORTE DE ELIMINADO
                 //Conseguimos el id del usuario
                 $user = \Auth::user();
@@ -906,7 +1022,7 @@ class LogisticaController extends Controller
 
         foreach ($inventario as $product) {
             $data_content["dato-1"] = $product->producto->nombre;
-            $data_content["dato-2"] = $product->precio." Bs";
+            $data_content["dato-2"] = number_format($product->precio,2, ",", ".")." Bs";
             $data_content["dato-3"] = $product->cantidad." Kg/Und";
             $data_content["dato-4"] = $product->expedicion ? $product->expedicion : "no posee";
             array_push($datos,$data_content);
@@ -961,7 +1077,7 @@ class LogisticaController extends Controller
             $data_content["dato-1"] = $product->id_compra == 0 ? "Ingreso Manual" : $product->id_compra;
             $data_content["dato-2"] = $product->proveedor->nombre;
             $data_content["dato-3"] = $product->producto->nombre;
-            $data_content["dato-4"] = $product->precio." Bs";
+            $data_content["dato-4"] = number_format($product->precio,2, ",", ".")." Bs";
             $data_content["dato-5"] = $product->cantidad." Kg/Und";
             $data_content["dato-6"] = $product->expedicion ? $product->expedicion : "no posee";
             array_push($datos,$data_content);

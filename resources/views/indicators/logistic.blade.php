@@ -39,8 +39,8 @@
                     array_push($c1_entradas,$row->cantidad);
                     $grabo = false;
                     foreach($salidas as $col){
-                        if($col->id_producto == $row->id_producto){
-                            array_push($c1_salidas,$col->cantidad*-1); 
+                        if($col["id_producto"] == $row->id_producto){
+                            array_push($c1_salidas,$col["cantidad"]*-1); 
                             $grabo=true;
                         }
                     }

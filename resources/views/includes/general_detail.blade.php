@@ -1,3 +1,112 @@
+<style>
+    /* BOTONES DEL FINAL RESPONSIVE */
+    @media (max-width: 450px) {  
+        #edit-buttons{
+            display: block !important;
+        }
+
+        #btn-back{
+            text-align: center;
+        }
+
+        #btn-edit{
+            text-align: center;
+            margin-bottom: 5px;
+        }
+    }
+
+    /* RESPONSIVE RIGHT INFORMATION - DETALLADO DE PRODUCTOS*/
+    @media (max-width: 1435px) {  
+        #detail-detail-products, .detail-product-info, .detail-inline-info{
+            font-size: 10px;
+        }
+    }
+
+    @media (max-width: 1275px) {  
+        #detail-detail-products{
+            font-size: 8px;
+        }
+    }
+
+    @media (max-width: 1100px) {  
+        #detail-detail-products, .detail-product-info, .detail-inline-info{
+            font-size: 12px;
+        }
+    }
+
+    @media (max-width: 700px) {  
+        .detail-product-info{
+            font-size: 10px;
+        }
+    }
+
+    @media (max-width: 576px) {  
+        .detail-product-info{
+            font-size: 12px;
+        }
+
+        .detail-product-info-space{
+            border-right: 0 !important;
+        }
+
+        .detail-product-info-box{
+            height: calc(7.7rem + 10px) !important;
+        }
+
+        #detail-detail-products{
+            display: none;
+        }
+    }
+
+    @media (min-width: 577px) {  
+        .detail-product-info .rl-producto{
+            display: none;
+        }
+
+        .detail-product-info .rl-precio{
+            display: none;
+        }
+
+        .detail-product-info .rl-cantidad{
+            display: none;
+        }
+    }
+
+    @media (max-width: 500px) {  
+        #detail-detail-products, .detail-product-info, .detail-inline-info{
+            font-size: 10px;
+        }
+
+        .right-title{
+            font-size: 12px !important;
+        }
+    }
+
+    /* RESPONSIVIDAD DEL RECETARIO */
+    @media (max-width: 1370px) {  
+        .recetario-text{
+            font-size: 10px;
+        }
+    }
+
+    @media (max-width: 1200px) {  
+        .recetario-text{
+            font-size: 12px;
+        }
+
+        .margin-cantidad, .margin-delete{
+            margin-top: 10px;
+        }
+    }
+
+    @media (min-width: 1200px) {  
+        .recetario-separator{
+            display: none;
+        }
+    }
+    
+</style>
+
 <!-- BLOQUE DE LA INFORMACIÓN -->
 <div class="row justify-content-center my-2 px-3">
     <!-- APARTADO CON LOS DATOS -->
@@ -108,7 +217,7 @@
             @endif
                 <div class="rounded">
                 @if(isset($component['title']))    
-                    <span id="name-{{ $component['table-id'] }}" class="mb-2 col-12" style="font-size: 1.1em">{{ $component['title'] }}</span>
+                    <span id="name-{{ $component['table-id'] }}" class="mb-2 col-12 right-title" style="font-size: 1.1em">{{ $component['title'] }}</span>
                 @endif
                 @if($component['type'] == "table")
                     <div class="table-responsive col-12" id="{{ $component['table-id'] }}">
@@ -167,9 +276,9 @@
                 @elseif($component['type'] == "inline-info")
                     @if(!empty($component['information']))
                         @foreach ($component['information'] as $data)
-                        <div class="d-block my-2">
+                        <div class="d-block my-2 detail-inline-info">
                             <label class="font-weight-bold">{{ $data['label'] }}:</label>
-                            <span class="d-inline form-control border-0" style="height: calc(2.19rem + 10px);">
+                            <span class="d-inline form-control border-0 detail-inline-info" style="height: calc(2.19rem + 10px);">
                                 {{ $data['dato'] }}
                             </span>
                         </div>
@@ -179,7 +288,7 @@
                     @if(!empty($component['productos']))
                     <div class="d-block mt-2">
                         <label class="font-weight-bold">DETALLADO DE PRODUCTOS:</label>
-                        <div class="col-12 p-2" >
+                        <div class="col-12 p-2" id="detail-detail-products">
                             <div class="input-group row justify-content-center">
                                 <div class="col-6 d-flex">
                                     <!-- PRODUCTO -->
@@ -196,41 +305,47 @@
                             </div>                        
                         </div>
                         @foreach ($component['productos'] as $product)
-                            <div class="form-group form-control col-12 p-0" style="height: calc(2.19rem + 10px)">
+                            <div class="form-group form-control col-12 p-0 detail-product-info-box" style="height: calc(2.19rem + 10px)">
                                 <div class="input-group row justify-content-center">
-                                    <div class="d-flex col-6" style="border-right: 1px solid #ced4da; overflow: hidden">
+                                    <div class="d-flex col-sm-6 col-12 detail-product-info-space" style="border-right: 1px solid #ced4da; overflow: hidden">
                                     <!-- PRODUCTO -->
-                                        <div class="my-auto icon-box text-center bg-transparent" style="border: 0px; border-radius: 0px">
-                                            <span>{{ $product['name'] }}</span>
+                                        <div class="my-auto icon-box text-center bg-transparent detail-product-info" style="border: 0px; border-radius: 0px">
+                                            <span><strong class="rl-producto">Producto: </strong>{{ $product['name'] }}</span>
                                         </div>
                                     </div>
-                                    <div class="d-flex col-3" style="border-right: 1px solid #ced4da; overflow: hidden">
+                                    <div class="d-flex col-sm-3 col-12 detail-product-info-space" style="border-right: 1px solid #ced4da; overflow: hidden">
                                     <!-- CANTIDAD -->
-                                        <div class="my-auto icon-box text-center bg-transparent" style="border: 0px; border-radius: 0px">
-                                            <span>{{ $product['cantidad'] }}</span>
+                                        <div class="my-auto icon-box text-center bg-transparent detail-product-info" style="border: 0px; border-radius: 0px">
+                                            <span><strong class="rl-cantidad">Cantidad (Kg/Und): </strong>{{ $product['cantidad'] }}</span>
                                         </div>
                                     </div>
-                                    <div class="d-flex col-3">
+                                    <div class="d-flex col-sm-3 col-12">
                                     <!-- PRECIO -->
-                                        <div class="my-auto icon-box text-center bg-transparent" style="border: 0px; border-radius: 0px">
-                                            <span>{{ $product['precio'] }} Bs</span>
+                                        <div class="my-auto icon-box text-center bg-transparent detail-product-info" style="border: 0px; border-radius: 0px">
+                                            <span><strong class="rl-precio">Precio: </strong>{{ number_format($product['precio'],2, ",", ".") }} Bs</span>
                                         </div>
                                     </div>
                                 </div>                          
                             </div>
                         @endforeach
+                        <div class="form-group col-12">
+                            <div class="d-none" id="editar-orden-button" style="cursor: pointer; width: fit-content">
+                                <i class="fa fa-arrow-circle-right fa-lg m-auto"></i>
+                                <a>Editar Orden...</a>
+                            </div>
+                        </div>
                     </div>
                     @endif
 
                     @if(isset($component['recetario']))
                     <div class="d-block">
-                        <label class="font-weight-bold">Recetario del Producto:</label>
+                        <label class="font-weight-bold right-title">Recetario del Producto:</label>
                         @php $cantidad = 1; @endphp
                         <div class="form-row justify-content-center">
                             <div id="recetario-{{ $data['form-id'] }}" class="col-12">
                             @foreach ($component['recetario'] as $product)
                                 <div class="form-group col-12 row justify-content-center" id="{{ $cantidad }}">
-                                    <div class="col-xl-5 col-12 p-0">
+                                    <div class="col-xl-5 col-12 p-0 recetario-text">
                                         <!-- PRODUCTO -->
                                         <label>Producto:</label>
                                         <div class="input-group validate-input" data-validate="Producto es requerido">
@@ -245,7 +360,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-xl-5 col-12 p-0">
+                                    <div class="col-xl-5 col-12 p-0 recetario-text margin-cantidad">
                                         <!-- CANTIDAD -->
                                         <label>Cantidad (Kg / Und):</label>
                                         <div class="input-group validate-input form-cantidad" data-validate="Producto es requerido">
@@ -263,11 +378,12 @@
                                             >
                                         </div>
                                     </div>
-                                    <div class="col-lg d-flex p-0">
+                                    <div class="col-lg d-flex p-0 margin-delete">
                                         <button id="" class="btn recetario-buttons m-xl-auto mt-xl-0 mt-1" onclick="borrar({{ $cantidad }})">
                                             <i class="fa fa-trash font-weight-bold"></i>
                                         </button>
                                     </div>
+                                    <div style="border-bottom: 1px solid #C3CAD6;" class="w-100 my-3 recetario-separator"></div>
                                 </div>
                                 @php $cantidad++; @endphp
                             @endforeach
@@ -292,14 +408,14 @@
 </div>
 
 <!-- BOTONES DE EDITAR O ECHAR PARA ATRAS -->
-<div class="d-flex justify-content-end mt-2 p-2" style="background-color: #F6FAF5">
+<div id="edit-buttons" class="d-flex justify-content-end mt-2 p-2" style="background-color: #F6FAF5">
     <!-- APARTADO CON LOS DATOS -->
-    <div class="">
+    <div class="" id="btn-edit">
         <button class="btn table-buttons px-5" disabled id="form-edit">Editar</button>
     </div>
 
     <!-- APATADO LATERAL CON LA INFORMACIÓN EXTRA -->
-    <div class="mx-2">
+    <div class="mx-2" id="btn-back">
         <button class="btn table-buttons px-5" id="form-back" onclick="retroceder()">Volver</button>
     </div>
 </div>
@@ -333,6 +449,7 @@
                 $('#'+form_id+' .input100').removeAttr("readonly");
                 $('#'+form_id+' .input100').removeAttr("disabled");
                 $("#recetario-"+form_id+" .input100").removeAttr("readonly");
+                $('#editar-orden-button').removeClass("d-none");
                 $('#'+agregar).removeClass("d-none");
                 $('#form-re-password').removeClass("d-none");
                 $("#label-delete").removeClass("d-none");
@@ -341,6 +458,11 @@
         //EVENTO PARA QUITAR LA CONFIRMACIÓN DE CONTRASEÑA SE LLEGA Y LO MUESTRE LUEGO DE DARLE EDITAR
             $("#form-re-password").addClass("d-none");
             $("#label-delete").addClass("d-none");
+
+        //EVENTO CLICK QUE ABRE EL MODAL DE LA ORDEN
+            $("#editar-orden-button").click(function(event){
+                $('#table-orden').modal(true);
+            });
     })(jQuery);
 
     //EVENTO PARA AGREGAR NUEVOS PRODUCTOS AL RECETARIO
@@ -351,7 +473,7 @@
 
             $("#"+agregar).click(function() {
                 html = "<div class='form-group col-12 row justify-content-center' id="+cantidad+">";
-                html +=   "<div class='col-xl-5 col-12 p-0'>";
+                html +=   "<div class='col-xl-5 col-12 p-0 recetario-text'>";
                 html +=       "<label>Producto:</label>";
                 html +=        "<div class='input-group validate-input' data-validate='Producto es requerido'>";
                 html +=           "<select name='form-producto-"+cantidad+"'"; 
@@ -366,7 +488,7 @@
                 html +=            "</select>";
                 html +=        "</div>";
                 html +=    "</div>";
-                html +=    "<div class='col-xl-5 col-12 p-0'>";
+                html +=    "<div class='col-xl-5 col-12 p-0 recetario-text margin-cantidad'>";
                 html +=        "<label>Cantidad (Kg / Und):</label>";
                 html +=        "<div class='input-group validate-input' data-validate='Producto es requerido'>";
                 html +=            "<input class='form-control input100 border-left req-true form-cantidad'"; 
@@ -375,11 +497,12 @@
                 html +=                " value='0' placeholder='Ingrese la cantidad del producto' min='0' step='any'>";
                 html +=        "</div>";
                 html +=    "</div>";
-                html +=    "<div class='col-lg d-flex p-0'>";
+                html +=    "<div class='col-lg d-flex p-0 margin-delete'>";
                 html +=        "<button class='btn recetario-buttons m-xl-auto mt-xl-0 mt-1' onclick='borrar("+cantidad+")'>";
                 html +=            "<i class='fa fa-trash font-weight-bold'></i>";
                 html +=        "</button>";
                 html +=    "</div>";
+                html +=    "<div style='border-bottom: 1px solid #C3CAD6;' class='w-100 my-3 recetario-separator'></div>";
                 html +="</div>";
 
                 $("#"+recetario).append(html);

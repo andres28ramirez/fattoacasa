@@ -18,6 +18,9 @@
         <li class="nav-item">
             <a class="nav-link text-dark active font-weight-bold" href="{{ route('cp')}}">Pagos Realizados</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-secondary" href="{{ route('discard-compras')}}">Compras Descartadas</a>
+        </li>
     </ul>
 @endsection
 
@@ -176,10 +179,10 @@
                     $data_content["dato-1"] = $element->proveedor->nombre;
                 }
                 $data_content["dato-2"] = $buy->pago->banco;
-                $data_content["dato-3"] = $buy->pago->referencia;
+                $data_content["dato-3"] = $buy->pago->referencia ? $buy->pago->referencia : "No posee";
                 $data_content["dato-4"] = $buy->pago->fecha_pago;
                 $data_content["dato-5"] = $buy->id;
-                $data_content["dato-6"] = $buy->monto." Bs";
+                $data_content["dato-6"] = number_format($buy->monto,2, ",", ".")." Bs";
 
                 array_push($data_list["content"],$data_content);
             }
@@ -243,6 +246,10 @@
                                         array(
                                             "value" => "todos",
                                             "nombre" => "Cualquier Banco",
+                                        ),
+                                        array(
+                                            "value" => "Otro",
+                                            "nombre" => "Otro",
                                         ),
                                         array(
                                             "value" => "Bancamiga",

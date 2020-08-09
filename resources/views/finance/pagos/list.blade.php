@@ -16,7 +16,7 @@
             <a class="nav-link text-secondary" href="{{ route('list-gasto-costo') }}">Gastos y Costos</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Nómina</a>
+            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Personal</a>
         </li>
         <li class="nav-item">
             <a class="nav-link text-dark active font-weight-bold" href="{{ route('finance-pagos') }}">Pagos</a>
@@ -187,23 +187,23 @@
             );
 
             foreach ($pagos as $row) {
+                $show_pago = false;
                 $data_content["id"] = $row->id;
                 $data_content["dato-1"] = $row->id;
                 $data_content["dato-2"] = $row->banco;
-                $data_content["dato-3"] = $row->referencia;
+                $data_content["dato-3"] = $row->referencia ? $row->referencia : "No posee";
                 $data_content["dato-4"] = $row->fecha_pago;
                 foreach($row->compra as $fila){
+                    $show_pago = true;
                     $data_content["dato-5"] = "Compra";
-                    $data_content["dato-6"] = $fila->monto;
+                    $data_content["dato-6"] = number_format($fila->monto,2, ",", ".")." Bs";
                 }
                 foreach($row->venta as $fila){
+                    $show_pago = true;
                     $data_content["dato-5"] = "Venta";
-                    $data_content["dato-6"] = $fila->monto;
+                    $data_content["dato-6"] = number_format($fila->monto,2, ",", ".")." Bs";
                 }
-                foreach($row->nomina as $fila){
-                    $data_content["dato-5"] = "Nómina";
-                    $data_content["dato-6"] = $fila->monto;
-                }
+                if($show_pago)
                 array_push($data_list["content"],$data_content);
             }
         @endphp
@@ -247,10 +247,6 @@
                                             "value" => "Venta",
                                             "nombre" => "Venta",
                                         ),
-                                        array(
-                                            "value" => "Nomina",
-                                            "nombre" => "Nómina",
-                                        ),
                                     ),
                                     "validate" => "Tipo de pago es requerido",
                                     "bd-error" => "LO QUE SEA",
@@ -276,6 +272,10 @@
                                     "form_name" => "banco",
                                     "title" => "Selecciona un Banco",
                                     "options" => array(
+                                        array(
+                                            "value" => "Otro",
+                                            "nombre" => "Otro",
+                                        ),
                                         array(
                                             "value" => "Bancamiga",
                                             "nombre" => "Bancamiga",

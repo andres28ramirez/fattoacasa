@@ -1,3 +1,29 @@
+<style>
+    @media (max-width: 860px) {  
+        #mixedlinebarchart{{ $data['canva'] }}{
+            height: 50px;
+        }
+    }
+
+    @media (max-width: 550px) {  
+        #mixedlinebarchart{{ $data['canva'] }}{
+            height: 40px;
+        }
+    }
+
+    @media (max-width: 500px) {  
+        #mixedlinebarchart{{ $data['canva'] }}{
+            height: 30px;
+        }
+    }
+
+    @media (max-width: 400px) {  
+        #mixedlinebarchart{{ $data['canva'] }}{
+            height: 20px;
+        }
+    }
+</style>
+
 <div class="rounded">
     <div class="card-header py-3 d-flex">
         <h6 class="my-auto font-weight-bold float-left" style="color: #333333; letter-spacing: 1px">{{ $data['texto'] }}</h6>

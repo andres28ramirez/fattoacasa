@@ -21,6 +21,9 @@
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('list-pagos')}}">Pagos Recibidos</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-secondary" href="{{ route('discard-ventas')}}">Ventas Descartadas</a>
+        </li>
     </ul>
 @endsection
 
@@ -234,16 +237,18 @@
             );
 
             foreach ($despachos as $despacho) {
-                $data_content["id"] = $despacho->id;
-                $data_content["dato-1"] = $despacho->id_venta;
-                $data_content["dato-2"] = $despacho->venta->cliente->nombre;
-                $data_content["dato-3"] = $despacho->venta->monto." Bs";
-                $data_content["dato-4"] = $despacho->venta->fecha;
-                $data_content["dato-5"] = $despacho->trabajador->nombre." ".$despacho->trabajador->apellido;
-                $data_content["dato-6"] = $despacho->fecha;
-                $data_content["estado-7"] = $despacho->entregado ? "Finalizado" : "Pendiente";
+                if($despacho->venta){
+                    $data_content["id"] = $despacho->id;
+                    $data_content["dato-1"] = $despacho->id_venta;
+                    $data_content["dato-2"] = $despacho->venta->cliente->nombre;
+                    $data_content["dato-3"] = number_format($despacho->venta->monto,2, ",", ".")." Bs";
+                    $data_content["dato-4"] = $despacho->venta->fecha;
+                    $data_content["dato-5"] = $despacho->trabajador ? $despacho->trabajador->nombre." ".$despacho->trabajador->apellido : "No posee";
+                    $data_content["dato-6"] = $despacho->fecha;
+                    $data_content["estado-7"] = $despacho->entregado ? "Finalizado" : "Pendiente";
 
-                array_push($data_list["content"],$data_content);
+                    array_push($data_list["content"],$data_content);
+                }
             }
         @endphp
         @include('includes.general_table',['data'=>$data_list])

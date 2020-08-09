@@ -18,6 +18,9 @@
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('cp')}}">Pagos Realizados</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-secondary" href="{{ route('discard-compras')}}">Compras Descartadas</a>
+        </li>
     </ul>
 @endsection
 
@@ -113,10 +116,6 @@
                         "nombre" => "CI/RIF",
                         "bd-name" => "rif_cedula",
                     ),
-                    array(
-                        "nombre" => "Contactar",
-                        "bd-name" => "id",
-                    ),
                 ),
 
                 "content" => array(),
@@ -130,7 +129,6 @@
                 "dato-4" => "04120950165",
                 "dato-5" => "leomiguel1907@gmail.com",
                 "dato-6" => "268427456",
-                "contact-7" => "leomiguel1907@gmail.com",
             );
 
             foreach ($providers as $provider) {
@@ -141,7 +139,6 @@
                 $data_provider["dato-4"] = $provider->telefono;
                 $data_provider["dato-5"] = $provider->correo;
                 $data_provider["dato-6"] = $provider->tipo_cid."".$provider->rif_cedula;
-                $data_provider["contact-7"] = $provider->correo;
 
                 array_push($data_list["content"],$data_provider);
             }

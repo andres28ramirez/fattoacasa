@@ -222,7 +222,7 @@
                 $data_content["dato-1"] = $product->id_compra == 0 ? "Ingreso Manual" : $product->id_compra;
                 $data_content["dato-2"] = $product->proveedor->nombre;
                 $data_content["dato-3"] = $product->producto->nombre;
-                $data_content["dato-4"] = $product->precio." Bs";
+                $data_content["dato-4"] = number_format($product->precio,2, ",", ".")." Bs";
                 $data_content["dato-5"] = $product->cantidad." Kg/Und";
                 $data_content["dato-6"] = $product->expedicion ? $product->expedicion : "no posee";
 
@@ -429,7 +429,7 @@
                                 ),
                                 array(
                                     "component-type" => "input",
-                                    "label-name" => "Precio del Producto",
+                                    "label-name" => "Precio del Producto (Bs)",
                                     "icon" => "fa-money",
                                     "type" => "text",
                                     "id_name" => "form-price",
@@ -517,7 +517,7 @@
                                 ),
                                 array(
                                     "component-type" => "input",
-                                    "label-name" => "Precio del Producto",
+                                    "label-name" => "Precio del Producto (Bs)",
                                     "icon" => "fa-money",
                                     "type" => "text",
                                     "id_name" => "form-price",

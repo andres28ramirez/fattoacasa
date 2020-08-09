@@ -16,7 +16,7 @@
             <a class="nav-link text-dark active font-weight-bold" href="{{ route('list-gasto-costo') }}">Gastos y Costos</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Nómina</a>
+            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Personal</a>
         </li>
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('finance-pagos') }}">Pagos</a>
@@ -60,7 +60,7 @@
                             "label-name" => "Fecha",
                             "icon" => "fa-calendar",
                             "type" => "date",
-                            "id_name" => "form-fecha",
+                            "id_name" => "form-fecha-pago",
                             "form_name" => "fecha",
                             "placeholder" => "Ingrese la fecha del egreso",
                             "validate" => "Fecha es requerida",
@@ -69,7 +69,7 @@
                         ),
                         array(
                             "component-type" => "input",
-                            "label-name" => "Monto",
+                            "label-name" => "Monto en Bs",
                             "icon" => "fa-money",
                             "type" => "text",
                             "id_name" => "form-price",

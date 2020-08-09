@@ -2,7 +2,7 @@
 
 @section('title','Finanzas · Fatto a Casa')
 
-@section('titulo','FATTO A CASA - NÓMINA')
+@section('titulo','FATTO A CASA - PERSONAL')
 
 @section('tabs')
     <ul class="nav nav-tabs opciones">
@@ -16,7 +16,7 @@
             <a class="nav-link text-secondary" href="{{ route('list-gasto-costo') }}">Gastos y Costos</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-dark active font-weight-bold" href="{{ route('list-nomina') }}">Nómina</a>
+            <a class="nav-link text-dark active font-weight-bold" href="{{ route('list-nomina') }}">Personal</a>
         </li>
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('finance-pagos') }}">Pagos</a>
@@ -39,7 +39,6 @@
                     $("#submit-form-list-nomina").unbind('click').click(function(event){
                         $("#form-list-nomina").on('submit',function(){
                             //Evaluar los valores que me llegan y hacer el location.href
-                            var empleado = $('#form-list-nomina select[id="form-worker"] option:selected').val(); if(!empleado) empleado = "todos";
                             var tiempo = $('#form-list-nomina select[id="form-tiempo"] option:selected').val();
                             var ayo = "todos";
                             var mes = "todos";
@@ -56,9 +55,9 @@
                             var registro = "{{ route('list-nomina') }}";
                             var orden = "{{$order}}";
                             
-                            var ruta = registro+"/"+cantidad+"/"+empleado+"/"+tiempo+"/"+ayo+"/"+mes+"/"+orden;
+                            var ruta = registro+"/"+cantidad+"/"+tiempo+"/"+ayo+"/"+mes+"/"+orden;
                             
-                            if(empleado && tiempo){
+                            if(tiempo){
                                 location.href = ruta;
                             }
                             return false;
@@ -93,7 +92,6 @@
                     }
                     break;
                 case "registros":
-                    var empleado = "{{ $empleado }}"; if(!empleado) empleado = "todos";
                     var tiempo = "{{ $tiempo }}"; if(!tiempo) tiempo = "todos";
                     var ayo = "{{ $ayo }}"; if(!ayo) ayo = "todos";
                     var mes = "{{ $mes }}"; if(!mes) mes = "todos";
@@ -102,7 +100,7 @@
                     var registro = "{{ route('list-nomina') }}";
                     var orden = "{{$order}}";
 
-                    var ruta = registro+"/"+cantidad+"/"+empleado+"/"+tiempo+"/"+ayo+"/"+mes+"/"+orden;
+                    var ruta = registro+"/"+cantidad+"/"+tiempo+"/"+ayo+"/"+mes+"/"+orden;
                     location.href = ruta;
                     break;
                 case "refresh":
@@ -110,17 +108,15 @@
                     location.href = registro;
                     break;
                 case "print":
-                    var empleado = "{{ $empleado }}"; if(!empleado) empleado = "todos";
                     var tiempo = "{{ $tiempo }}"; if(!tiempo) tiempo = "todos";
                     var ayo = "{{ $ayo }}"; if(!ayo) ayo = "todos";
                     var mes = "{{ $mes }}"; if(!mes) mes = "todos";
 
                     var registro = "{{ route('pdf-list-nomina') }}";
-                    var ruta = registro+"/"+empleado+"/"+tiempo+"/"+ayo+"/"+mes;
+                    var ruta = registro+"/"+tiempo+"/"+ayo+"/"+mes;
                     window.open(ruta);
                     break;
                 default: //EL DEFAULT ES EL DE ORDENAR
-                    var empleado = "{{ $empleado }}"; if(!empleado) empleado = "todos";
                     var tiempo = "{{ $tiempo }}"; if(!tiempo) tiempo = "todos";
                     var ayo = "{{ $ayo }}"; if(!ayo) ayo = "todos";
                     var mes = "{{ $mes }}"; if(!mes) mes = "todos";
@@ -129,7 +125,7 @@
                     var registro = "{{ route('list-nomina') }}";
                     var orden = e;
 
-                    var ruta = registro+"/"+cantidad+"/"+empleado+"/"+tiempo+"/"+ayo+"/"+mes+"/"+orden;
+                    var ruta = registro+"/"+cantidad+"/"+tiempo+"/"+ayo+"/"+mes+"/"+orden;
                     location.href = ruta;
                     break;
             }
@@ -151,7 +147,7 @@
         @endif
 
         @php
-            if($empleado)
+            if($tiempo)
                 $filtrado = true;
             else
                 $filtrado = false;
@@ -168,10 +164,6 @@
                         "bd-name" => "id",
                     ),
                     array(
-                        "nombre" => "Empleado",
-                        "bd-name" => "id_trabajador",
-                    ),
-                    array(
                         "nombre" => "Año",
                         "bd-name" => "created_at",
                     ),
@@ -183,10 +175,6 @@
                         "nombre" => "Monto",
                         "bd-name" => "monto",
                     ),
-                    array(
-                        "nombre" => "Referencia de Pago",
-                        "bd-name" => "referencia",
-                    ),
                 ),
                 "content" => array(),
             );
@@ -194,22 +182,18 @@
             $data_content = array(
                 "id" => 3,
                 "dato-1" => "3",
-                "dato-2" => "Andres Ramirez",
-                "dato-3" => "28-06-1996",
-                "dato-4" => "Junio",
-                "dato-5" => "20.000 Bs",
-                "dato-6" => "645789432",
+                "dato-2" => "28-06-1996",
+                "dato-3" => "Junio",
+                "dato-4" => "20.000 Bs",
             );
 
             foreach ($nomina as $row) {
                 $data_content["id"] = $row->id;
                 $data_content["dato-1"] = $row->id;
-                $data_content["dato-2"] = $row->trabajador->nombre." ".$row->trabajador->apellido;
-                $data_content["dato-3"] = strftime("%Y", strtotime($row->mes));
+                $data_content["dato-2"] = strftime("%Y", strtotime($row->mes));
                 setlocale(LC_TIME, "spanish"); 
-                $data_content["dato-4"] = strftime("%B", strtotime($row->mes));
-                $data_content["dato-5"] = $row->monto." Bs";
-                $data_content["dato-6"] = $row->pago->referencia;
+                $data_content["dato-3"] = strftime("%B", strtotime($row->mes));
+                $data_content["dato-4"] = number_format($row->monto,2, ",", ".")." Bs";
 
                 array_push($data_list["content"],$data_content);
             }
@@ -232,37 +216,12 @@
                 </div>
                 <div class="modal-body">
                     @php
-                        $workers = array ();
-
-                        $one_content = array(
-                            "value" => "ID TRABAJADOR",
-                            "nombre" => "X Trabajador",
-                        );
-
-                        foreach ($trabajadores as $worker) {
-                            $one_content["value"] = $worker->id;
-                            $one_content["nombre"] = $worker->nombre." ".$worker->apellido;
-                            array_push($workers,$one_content);
-                        }
-
                         $data_form = array(
                             "action" => "",
                             "title" => "",
                             "form-id" => "form-list-nomina",
                             
                             "form-components" => array(
-                                array(
-                                    "component-type" => "select",
-                                    "label-name" => "Empleado (Opcional*):",
-                                    "icon" => "fa-book",
-                                    "id_name" => "form-worker",
-                                    "form_name" => "form-worker",
-                                    "title" => "Selecciona un Empleado",
-                                    "options" => $workers,
-                                    "validate" => "Tiempo a evaluar es requerido",
-                                    "bd-error" => "LO QUE SEA",
-                                    "requerido" => "req-false",
-                                ),
                                 array(
                                     "component-type" => "select",
                                     "label-name" => "Fecha de Pago",

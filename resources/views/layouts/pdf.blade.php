@@ -68,7 +68,7 @@
     }
 
     #project {
-        float: left;
+        padding-left: 33px;
     }
 
     #project span {
@@ -190,7 +190,10 @@
     </header>
     <main>
         <div id="notices">
-            <div>Parametros de Busqueda:</div>
+            <div>Usuario que generó el reporte: <strong>{{Auth::user()->name}}</strong></div>
+            @php setlocale(LC_TIME, 'spanish'); @endphp
+            <div>Fecha de Emisión: <strong>{{strftime("%d de %B del %Y")}}</strong></div><br>
+            <div>Parámetros de Busqueda:</div>
             <div class="notice">{{$filtro}}.</div>
         </div>
         <table>
@@ -203,7 +206,7 @@
             </thead>
             <tbody>
                 @foreach($datos as $row)
-                    <tr>
+                    <tr style="font-size: 8px">
                         @for($i = 1; $i <= count($titulos); $i++)
                             @if(isset($row['dato-'.$i]))  
                                 <td class="">{{$row['dato-'.$i]}}</td>
@@ -211,13 +214,13 @@
                         @endfor
                     </tr>
                 @endforeach
-            <tr>
-                <td colspan="{{count($titulos)-1}}" class="grand total" style="text-align: right">Número de Registros:</td>
-                <td class="grand total">{{count($datos)}}</td>
-            </tr>
+                <tr>
+                    <td colspan="{{count($titulos)-1}}" class="grand total" style="text-align: right">Número de Registros:</td>
+                    <td class="grand total">{{count($datos)}}</td>
+                </tr>
             </tbody>
         </table>
     </main>
-    <footer>Reporte generado por computador y es invalido sin la firma y sellado del mismo.</footer>
+    <footer>Reporte generadó por computador y es inválido sin la firma y sellado del mismo.</footer>
   </body>
 </html>

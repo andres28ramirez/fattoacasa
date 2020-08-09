@@ -21,6 +21,9 @@
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('list-pagos')}}">Pagos Recibidos</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-secondary" href="{{ route('discard-ventas')}}">Ventas Descartadas</a>
+        </li>
     </ul>
 @endsection
 
@@ -251,5 +254,8 @@
                 var ruta = registro+"/"+id;
                 window.open(ruta);
             }
+        
+        //ELIMINAR OPCION DE EDITAR ORDEN
+            $("#editar-orden-button").css("visibility", "hidden ");
     </script>
 @endsection

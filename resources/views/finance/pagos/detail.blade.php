@@ -16,7 +16,7 @@
             <a class="nav-link text-secondary" href="{{ route('list-gasto-costo') }}">Gastos y Costos</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Nómina</a>
+            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Personal</a>
         </li>
         <li class="nav-item">
             <a class="nav-link text-dark active font-weight-bold" href="{{ route('finance-pagos') }}">Pagos</a>
@@ -142,6 +142,10 @@
                         "title" => "Selecciona un Banco",
                         "options" => array(
                             array(
+                                "value" => "Otro",
+                                "nombre" => "Otro",
+                            ),
+                            array(
                                 "value" => "Bancamiga",
                                 "nombre" => "Bancamiga",
                             ),
@@ -228,6 +232,19 @@
                         "value" => $pago->banco,
                     ),
                     array(
+                        "component-type" => "textarea",
+                        "label-name" => "Nota de Pago",
+                        "icon" => "fa-money",
+                        "type" => "text",
+                        "id_name" => "form-nota-pago",
+                        "form_name" => "nota_pago",
+                        "placeholder" => "Ingresa la nota del pago",
+                        "validate" => "Nota es requerida",
+                        "bd-error" => "LO QUE SEA",
+                        "requerido" => "req-true",
+                        "value" => $pago->nota_pago,
+                    ),
+                    array(
                         "component-type" => "input",
                         "label-name" => "Referencia",
                         "icon" => "fa-th-list",
@@ -237,7 +254,7 @@
                         "placeholder" => "Ingrese la referencia bancaria",
                         "validate" => "Referencia es requerida",
                         "bd-error" => "LO QUE SEA",
-                        "requerido" => "req-true",
+                        "requerido" => "req-false",
                         "value" => $pago->referencia,
                     ),
                     array(
@@ -245,7 +262,7 @@
                         "label-name" => "Fecha del Pago",
                         "icon" => "fa-calendar",
                         "type" => "date",
-                        "id_name" => "form-fecha",
+                        "id_name" => "form-fecha-pago",
                         "form_name" => "fecha_pago",
                         "placeholder" => "Ingrese la fecha del pago",
                         "validate" => "Fecha es requerida",
@@ -255,7 +272,7 @@
                     ),
                     array(
                         "component-type" => "input",
-                        "label-name" => "Monto del Pago",
+                        "label-name" => "Monto del Pago en Bs",
                         "icon" => "fa-money",
                         "type" => "text",
                         "id_name" => "form-price",
@@ -273,27 +290,6 @@
         <!-- APARTADO INFORMACION DE LA DERECHA -->
         @php
             switch ($tipo) {
-                case "Nómina":
-                    $title = "Información de Pago Nómina";
-                    $datos = array(
-                        array(
-                            "label" => "Código en Nómina", 
-                            "dato" => $codigo,
-                        ),
-                        array(
-                            "label" => "Trabajador", 
-                            "dato" => $trabajador,
-                        ),
-                        array(
-                            "label" => "Fecha del Pago", 
-                            "dato" => $fecha,
-                        ),
-                        array(
-                            "label" => "Mes Correspondiente", 
-                            "dato" => $mes,
-                        ),
-                    );
-                    break;
                 case "Compra":
                     $title = "Información de Compra";
                     $datos = array(
@@ -364,5 +360,8 @@
         //BORRAR EL .INPUT100 DE LOS QUE NO PUEDEN SER EDITADOS 
             $("#form-tipo").removeClass("input100");
             $("#form-price").removeClass("input100");
+        
+        //ELIMINAR OPCION DE EDITAR ORDEN
+            $("#editar-orden-button").css("visibility", "hidden ");
     </script>
 @endsection

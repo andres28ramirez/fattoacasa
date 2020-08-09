@@ -38,14 +38,19 @@
                         </span>
                     </div>
 
-                    
-
                     <form class="login100-form validate-form" method="POST" action="{{ route('password.email') }}">
                         @csrf
 
                         @if (session('status'))
                             <div class="alert alert-success" role="alert">
-                                {{ session('status') }}
+                                {{-- session('status') --}}
+                                Hemos enviado un correo con el link para resetear la contraseña!
+                            </div>
+                        @endif
+
+                        @if(session('message'))
+                            <div class="alert alert-danger" role="alert">
+                                {{ session('message') }}
                             </div>
                         @endif
 
@@ -63,7 +68,7 @@
                         <div class="flex-sb-m w-full p-b-30">
                             <div>
                                 <a href="{{ route('login') }}" class="txt1">
-                                    Iniciar sesion
+                                    Iniciar Sesión
                                 </a>
                             </div>
                         </div>

@@ -21,7 +21,9 @@
             @php
                 $percentaje = ($datos['cantidad']*100)/$totals['total'];
             @endphp
-            <h4 class="small font-weight-bold ">{{ $datos['text'] }} <span class="float-right">{{ $datos['cantidad'] }}</span></h4>
+            <h4 class="small font-weight-bold ">{{ $datos['text'] }} 
+                <span class="float-right">{{ number_format($datos['cantidad'],2, ",", ".") }}</span>
+            </h4>
             <div class="progress mb-4">
                 <div 
                     class="progress-bar progress-bar-striped progress-bar-animated" 
@@ -40,7 +42,9 @@
             </div>
         @endforeach
 
-        <h4 class="small font-weight-bold">{{ $totals['total_text'] }} <span class="float-right">{{ $totals['total'] }}</span></h4>
+        <h4 class="small font-weight-bold">{{ $totals['total_text'] }} 
+            <span class="float-right">{{ number_format($totals['total'],2, ",", ".") }}</span>
+        </h4>
         <div class="progress">
             <div 
                 class="progress-bar progress-bar-striped progress-bar-animated" 

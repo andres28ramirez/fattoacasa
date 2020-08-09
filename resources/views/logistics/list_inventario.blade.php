@@ -198,7 +198,7 @@
             foreach ($inventario as $product) {
                 $data_content["id"] = $product->id;
                 $data_content["dato-1"] = $product->producto->nombre;
-                $data_content["dato-2"] = $product->precio." Bs";
+                $data_content["dato-2"] = number_format($product->precio,2, ",", ".")." Bs";
                 $data_content["dato-3"] = $product->cantidad." Kg/Und";
                 $data_content["dato-4"] = $product->expedicion ? $product->expedicion : "no posee";
 
@@ -349,7 +349,7 @@
                                 ),
                                 array(
                                     "component-type" => "input",
-                                    "label-name" => "Precio del Producto",
+                                    "label-name" => "Precio del Producto (Bs)",
                                     "icon" => "fa-money",
                                     "type" => "text",
                                     "id_name" => "form-price",
@@ -424,7 +424,7 @@
                                 ),
                                 array(
                                     "component-type" => "input",
-                                    "label-name" => "Precio del Producto",
+                                    "label-name" => "Precio del Producto (Bs)",
                                     "icon" => "fa-money",
                                     "type" => "text",
                                     "id_name" => "form-price",
@@ -490,6 +490,7 @@
             $(".tr-lista-inventario").click(function() {
                 //Elimino el error si existe
                 $("#error-edicion").remove();
+                $("#form-edit-inv #form-producto").attr("disabled",true);
                 var id = $(this).parent().attr("id"); //id del suministro
                 var url = "{{ route('info-inventario') }}";
                 var form = "form-edit-inv"; //ES EL ID DEL FORMULARIO
@@ -503,6 +504,10 @@
                 
                 //AGREGO LOS PRODUCTOS DE DICHO SUMINISTRO Y FORMATEO EL MODAL
                 ajaxEditLogistica(id,url,form,tipo,spinner);
+            });
+
+            $("#form-edit-inv #submit-form-edit-inv").click(function() {
+                $("#form-edit-inv #form-producto").attr("disabled",false);
             });
 
         //BORRO EL TITULO DE LOS FORMULARIOS DE FILTRADO
@@ -544,6 +549,20 @@
                     @endforeach
                 swal({
                     title: "El producto no pudo ser agregado",
+                    text: html,
+                    icon: 'error',
+                    closeOnClickOutside: false,
+                    button: 'Aceptar',
+                });
+            @endif
+
+            @if(session('fallo-edit'))
+                var html = 'Faltan los siguientes productos en suministro:';
+                    @foreach(session('fallo-edit') as $one)
+                        html += '\n{{ $one["nombre"] }}: {{ $one["cantidad"] }} Kg/unidades';
+                    @endforeach
+                swal({
+                    title: "El producto no pudo ser modificado",
                     text: html,
                     icon: 'error',
                     closeOnClickOutside: false,

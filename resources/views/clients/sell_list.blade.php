@@ -171,7 +171,7 @@
                 $data_content["id"] = $sell->id;
                 $data_content["dato-1"] = $sell->id;
                 $data_content["dato-2"] = $sell->cliente->nombre;
-                $data_content["dato-3"] = $sell->monto." Bs";
+                $data_content["dato-3"] = number_format($sell->monto,2, ",", ".")." Bs";
                 $data_content["dato-4"] = $sell->fecha;
                 $data_content["dato-5"] = $sell->credito." días";
 

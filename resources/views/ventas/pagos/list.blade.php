@@ -21,6 +21,9 @@
         <li class="nav-item">
             <a class="nav-link text-dark active font-weight-bold" href="{{ route('list-pagos')}}">Pagos Realizados</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-secondary" href="{{ route('discard-ventas')}}">Ventas Descartadas</a>
+        </li>
     </ul>
 @endsection
 
@@ -180,10 +183,10 @@
                     $data_content["dato-1"] = $element->cliente->nombre;
                 }
                 $data_content["dato-2"] = $sell->pago->banco;
-                $data_content["dato-3"] = $sell->pago->referencia;
+                $data_content["dato-3"] = $sell->pago->referencia ? $sell->pago->referencia : "No posee";
                 $data_content["dato-4"] = $sell->pago->fecha_pago;
                 $data_content["dato-5"] = $sell->id;
-                $data_content["dato-6"] = $sell->monto." Bs";
+                $data_content["dato-6"] = number_format($sell->monto,2, ",", ".")." Bs";
 
                 array_push($data_list["content"],$data_content);
             }
@@ -228,7 +231,7 @@
                                     "component-type" => "input",
                                     "label-name" => "Número de Referencia Bancaria (Opc.)",
                                     "icon" => "fa-book",
-                                    "type" => "number",
+                                    "type" => "text",
                                     "id_name" => "form-referencia",
                                     "form_name" => "form-referencia",
                                     "placeholder" => "Ingrese el código o la porción del mismo que desea",
@@ -247,6 +250,10 @@
                                         array(
                                             "value" => "todos",
                                             "nombre" => "Cualquier Banco",
+                                        ),
+                                        array(
+                                            "value" => "Otro",
+                                            "nombre" => "Otro",
                                         ),
                                         array(
                                             "value" => "Bancamiga",

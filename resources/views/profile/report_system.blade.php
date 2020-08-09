@@ -1,8 +1,8 @@
 @extends('layouts.principal')
 
-@section('title','Empleados · Fatto a Casa')
+@section('title','Reportes · Fatto a Casa')
 
-@section('titulo','FATTO A CASA - EMPLEADOS')
+@section('titulo','FATTO A CASA - REPORTES DEL SISTEMA')
 
 @section('tabs')
     <ul class="nav nav-tabs opciones">
@@ -27,7 +27,7 @@
     @endif
     @if(Auth::user()->tipo == "admin")
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración (Back-Ups)</a>
+            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración y Respaldo</a>
         </li>
     @endif
     </ul>

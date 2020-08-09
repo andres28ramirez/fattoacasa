@@ -15,6 +15,7 @@ use App\Desperdicio;
 use App\Gasto_Costo;
 use App\Pago;
 use App\Pago_Nomina;
+use App\Producto_Receta;
 
 class IndicadorController extends Controller
 {
@@ -30,14 +31,61 @@ class IndicadorController extends Controller
                                     groupBy('id_producto')->orderBy('cantidad', 'desc')->skip(0)->take(5)->get();
 
         //TOP 5 SALIDAS
-            $datos = array();
+            /* $datos = array();
             foreach($entradas as $row){
                 array_push($datos,$row->id_producto);
             }
             $salidas = Orden_Producto::select(DB::raw('SUM(cantidad) as cantidad'),'id_producto')->
                                         whereIn('id_producto',$datos)->where('id_venta','!=',0)->
-                                        groupBy('id_producto')->orderBy('cantidad', 'desc')->skip(0)->take(5)->get();
+                                        groupBy('id_producto')->orderBy('cantidad', 'desc')->skip(0)->take(5)->get(); */
             
+            $datos = array();
+            foreach($entradas as $row){
+                array_push($datos,$row->id_producto);
+            }
+            
+            //Me traigo el producto final del recetario de acuerdo a las entradas
+            $producto_venta = Producto_Receta::select('id_producto_final')->whereIn('id_ingrediente',$datos)->
+                                                groupBy('id_producto_final')->get();
+
+            //Ahora que tenga el ID del producto completo consulta sus ventas y cuanto ha generado
+            $salidas_venta = Orden_Producto::select(DB::raw('SUM(cantidad) as cantidad'),'id_producto')->
+                            whereIn('id_producto',$producto_venta)->where('id_venta','!=',0)->
+                            groupBy('id_producto')->get();
+
+            //Acomodo el array con los valores de salida
+            $salidas = array();
+
+            foreach($salidas_venta as $row){
+                unset($data_content);
+                $s_producto = Producto_Receta::select(DB::raw('cantidad*'.$row->cantidad.' as total'),'id_ingrediente')->
+                            where('id_producto_final',$row->id_producto)->get();
+                
+                //Ahora si grabo los valores
+                foreach($s_producto as $col){
+                    if(count($salidas) == 0){
+                        $data_content["id_producto"] = $col->id_ingrediente;
+                        $data_content["cantidad"] = $col->total;
+                        array_push($salidas,$data_content);
+                    }
+                    else{
+                        $push = true;
+                        foreach($salidas as $key => $check){
+                            if($check["id_producto"] == $col->id_ingrediente){
+                                $push = false;
+                                $salidas[$key]["cantidad"] += $col->total;
+                            }
+                            else{
+                                $data_content["id_producto"] = $col->id_ingrediente;
+                                $data_content["cantidad"] = $col->total;
+                            }
+                        }
+                        if($push)
+                            array_push($salidas,$data_content);
+                    }
+                }    
+            }
+
         //ENTRADAS DE INVENTARIO POR DIA
             $dia_entradas = Orden_Producto::selectRaw('SUM(cantidad) as cantidad, DATE_FORMAT(fecha, "%w") as dia')
                                         ->join('compra', 'orden_producto.id_compra', '=', 'compra.id')->
@@ -346,6 +394,7 @@ class IndicadorController extends Controller
         
         //PARA FILTRAR EN EL CHART 4 POR PRODUCTOS
             $products = Producto::all();
+            $titulo_chart = "Sin Productos";
             foreach($products as $pro){ $titulo_chart = $pro->nombre; break; };
             
         return view('indicators.buy', [
@@ -413,6 +462,8 @@ class IndicadorController extends Controller
             }
 
         //CHART 3 PRODUCTOS COMPRADOS GENERALMENTE POR UN CLIENTE
+            $valor = 1;
+            $titulo_chart = "Sin clientes";
             foreach($clients as $row){ $titulo_chart = $row->nombre; $valor = $row->id; break; };
             $cliente_compra = Orden_Producto::selectRaw('SUM(cantidad) as cantidad, MONTH(fecha) as mes')
                                         ->join('venta', 'orden_producto.id_venta', '=', 'venta.id')->

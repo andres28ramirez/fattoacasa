@@ -27,7 +27,7 @@
     @endif
     @if(Auth::user()->tipo == "admin")
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración (Back-Ups)</a>
+            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración y Respaldo</a>
         </li>
     @endif
     </ul>
@@ -111,7 +111,7 @@
                         "icon" => "fa-at",
                         "type" => "text",
                         "id_name" => "form-email",
-                        "form_name" => "correo",
+                        "form_name" => "email",
                         "placeholder" => "Ingrese el correo",
                         "validate" => "Correo es requerido",
                         "bd-error" => "LO QUE SEA",

@@ -12,6 +12,24 @@
     .table-buttons {
         color: #898989;
     }
+
+    @media (max-width: 1247px) {  
+        .pago-add{
+            margin-bottom: 10px;
+        }
+    }
+
+    @media (max-width: 1100px) {  
+        .pago-add{
+            margin-bottom: 0px;
+        }
+    }
+
+    @media (max-width: 896px) {  
+        .pago-add{
+            margin-bottom: 10px;
+        }
+    }
 </style>
 
 <div class="col-12 row justify-content-between">
@@ -130,6 +148,9 @@
                                 @endif
                                 @if (isset($one['despacho']) && $one['despacho'])
                                     <button id="{{ $one['id'] }}" class="btn btn-secondary despacho-add">Despacho</button>
+                                @endif
+                                @if (isset($one['integrar']) && $one['integrar'])
+                                    <button id="{{ $one['id'] }}" class="btn btn-secondary integrar-add">Anexar</button>
                                 @endif
                             </td>
                         @elseif(isset($one['contact-'.$i]))

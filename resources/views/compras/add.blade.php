@@ -18,7 +18,10 @@
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('cp')}}">Pagos Realizados</a>
         </li>
-</ul>
+        <li class="nav-item">
+            <a class="nav-link text-secondary" href="{{ route('discard-compras')}}">Compras Descartadas</a>
+        </li>
+    </ul>
 @endsection
 
 @section('info')
@@ -92,6 +95,10 @@
                             "form_name" => "banco",
                             "title" => "Selecciona un Banco",
                             "options" => array(
+                                array(
+                                    "value" => "Otro",
+                                    "nombre" => "Otro",
+                                ),
                                 array(
                                     "value" => "Bancamiga",
                                     "nombre" => "Bancamiga",
@@ -198,6 +205,18 @@
                             "form_name" => "referencia",
                             "placeholder" => "Ingresa la referencia del pago",
                             "validate" => "Referencia es requerida",
+                            "bd-error" => "LO QUE SEA",
+                            "requerido" => "req-false",
+                        ),
+                        array(
+                            "component-type" => "input",
+                            "label-name" => "Nota de Pago",
+                            "icon" => "fa-bookmark",
+                            "type" => "text",
+                            "id_name" => "form-nota-pago",
+                            "form_name" => "nota_pago",
+                            "placeholder" => "Ingrese la nota de pago",
+                            "validate" => "Nota es requerida",
                             "bd-error" => "LO QUE SEA",
                             "requerido" => "req-false",
                         ),

@@ -189,7 +189,7 @@ class ProveedorController extends Controller
             $report->save();
             
             DB::commit();
-            return redirect()->route('list-prov')->with('message', 'Proveedor Subido Correctamente');
+            return redirect()->route('list-prov')->with('message', 'Proveedor añadido Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -250,7 +250,7 @@ class ProveedorController extends Controller
             foreach ($productos as $pro) {
                 $content["nombre"] = $pro->producto->nombre;
                 $content["cantidad"] = $pro->cantidad;
-                $content["precio"] = $pro->precio;
+                $content["precio"] = number_format($pro->precio,2, ",", ".");
 
                 array_push($datos,$content);
             }
@@ -331,7 +331,7 @@ class ProveedorController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-prov', ['id' => $proveedor->id])->with('message', 'Proveedor Editado Correctamente');
+            return redirect()->route('detail-prov', ['id' => $proveedor->id])->with('message', 'Proveedor Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -473,7 +473,7 @@ class ProveedorController extends Controller
         foreach ($compras as $buy) {
             $data_content["dato-1"] = $buy->id;
             $data_content["dato-2"] = $buy->proveedor->nombre;
-            $data_content["dato-3"] = $buy->monto." Bs";
+            $data_content["dato-3"] = number_format($buy->monto,2, ",", ".")." Bs";
             $data_content["dato-4"] = $buy->fecha;
             $data_content["dato-5"] = $buy->credito." días";
             if(!$buy->pendiente){

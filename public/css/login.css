@@ -365,9 +365,84 @@
   /*------------------------------------------------------------------
   [ Responsive ]*/
   
-  @media (max-width: 576px) {
+  @media (max-width: 1140px) {
     .login100-form {
       padding: 43px 15px 57px 117px;
+    }
+
+
+    .wrap-login100{
+      width: 50%;
+    }
+  }
+
+  @media (max-width: 840px) {
+
+    .label-input100{
+      position: unset;
+      left: 0px;
+    }
+
+    .login100-form {
+      padding: 43px 30px 57px 30px;
+    }
+
+    .login100-form-title-1{
+      font-size: 25px;
+    }
+
+    .wrap-login100{
+      width: 60%;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .login100-form {
+      padding: 43px 15px 57px 117px;
+    }
+
+    .label-input100{
+      position: unset;
+      left: 0px;
+      font-size: 15px;
+    }
+
+    .input100{
+      font-size: 10px;
+    }
+
+    .txt1{
+      font-size: 12px;
+    }
+
+    .login100-form {
+      padding: 43px 30px 57px 30px;
+    }
+
+    .login100-form-title-1{
+      font-size: 20px;
+    }
+
+    .login100-form-btn{
+      font-size: 15px;
+    }
+
+    .alert-validate::before {
+      font-size: 10px;
+    }
+
+    .wrap-login100{
+      width: 70%;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .login100-form {
+      padding: 43px 20px 57px 20px;
+    }
+
+    .wrap-login100{
+      width: 80%;
     }
   }
   
@@ -383,6 +458,11 @@
       left: unset;
       width: 100%;
       padding: 0 5px;
+    }
+
+    .login100-form-btn{
+      font-size: 10px;
+      height: 25px;
     }
   }
   

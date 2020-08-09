@@ -32,13 +32,13 @@
             $indicator_totals = array(
                 array(
                     "color" => "#028936",
-                    "cantidad" => $porcentaje_desertores."%",
+                    "cantidad" => round($porcentaje_desertores,2)."%",
                     "text" => "TASA DE DESERCIÓN",
                     "figure" => "fa-frown-o"
                 ) ,
                 array(
                     "color" => "#245743",
-                    "cantidad" => $porcentaje_leales."%",
+                    "cantidad" => round($porcentaje_leales,2)."%",
                     "text" => "TASA DE LEALTAD",
                     "figure" => "fa-smile-o"
                 ) ,

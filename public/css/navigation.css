@@ -1033,12 +1033,39 @@ color: #333;
 .ML0 { margin-left:0}
 .MR0 { margin-right:0;}
 
+.navbar .toggle-btn .header-responsive{
+	display: none;
+}
+
+.navbar .toggle-btn .r-menu{
+	display: inline;
+}
+
 /*------------------------------------------------------------------
-[1. Max Width: 480px]
+[1. Max Width: 500px]
 */
-@media (max-width: 480px) {	
+@media (max-width: 500px) {	
 	.error-container h1 {
 		font-size: 72px;
+	}
+
+	.navbar .toggle-btn {
+		width: 100%;
+		margin: 0px;
+	}
+
+	.navbar .toggle-btn .header-responsive{
+		display: flex;
+	}
+
+	.navbar .toggle-btn .r-logo, .navbar .toggle-btn .r-menu{
+		display: none;
+	}
+
+	.navbar-brand{
+		width: 100%;
+		text-align: center;
+		margin: 0px;
 	}
 }
 
@@ -1048,8 +1075,6 @@ color: #333;
 @media (max-width: 800px) {  	
 	#main {
 		padding: 0 10px;
-		margin-right: -20px;
-		margin-left: -20px;	
 	}
 	
 	.subnavbar {
@@ -1130,7 +1155,7 @@ color: #333;
 	}
 
 }
-    
+
 /*------------------------------------------------------------------
 [3. Max Width: 979px]
 */

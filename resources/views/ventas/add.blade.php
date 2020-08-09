@@ -21,6 +21,9 @@
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('list-pagos')}}">Pagos Recibidos</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link text-secondary" href="{{ route('discard-ventas')}}">Ventas Descartadas</a>
+        </li>
     </ul>
 @endsection
 
@@ -84,6 +87,18 @@
                             "bd-error" => "LO QUE SEA",
                             "requerido" => "req-true",
                         ),
+                        array(
+                            "component-type" => "input",
+                            "label-name" => "Nota de Venta",
+                            "icon" => "fa-pencil",
+                            "type" => "text",
+                            "id_name" => "form-nota",
+                            "form_name" => "nota",
+                            "placeholder" => "Ingrese la nota de venta",
+                            "validate" => "Nota es requerida",
+                            "bd-error" => "LO QUE SEA",
+                            "requerido" => "req-true",
+                        ),
                     ),
 
                     "form-pago" => array(
@@ -95,6 +110,10 @@
                             "form_name" => "banco",
                             "title" => "Selecciona un Banco",
                             "options" => array(
+                                array(
+                                    "value" => "Otro",
+                                    "nombre" => "Otro",
+                                ),
                                 array(
                                     "value" => "Bancamiga",
                                     "nombre" => "Bancamiga",
@@ -201,6 +220,18 @@
                             "form_name" => "referencia",
                             "placeholder" => "Ingresa la referencia del pago",
                             "validate" => "Referencia es requerida",
+                            "bd-error" => "LO QUE SEA",
+                            "requerido" => "req-false",
+                        ),
+                        array(
+                            "component-type" => "input",
+                            "label-name" => "Nota de Pago",
+                            "icon" => "fa-bookmark",
+                            "type" => "text",
+                            "id_name" => "form-nota-pago",
+                            "form_name" => "nota_pago",
+                            "placeholder" => "Ingrese la nota de pago",
+                            "validate" => "Nota es requerida",
                             "bd-error" => "LO QUE SEA",
                             "requerido" => "req-false",
                         ),

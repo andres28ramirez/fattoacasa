@@ -166,7 +166,7 @@ class ClienteController extends Controller
             $report->save();
             
             DB::commit();
-            return redirect()->route('list-client')->with('message', 'Cliente Subido Correctamente');
+            return redirect()->route('list-client')->with('message', 'Cliente añadido Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -227,7 +227,7 @@ class ClienteController extends Controller
             foreach ($productos as $pro) {
                 $content["nombre"] = $pro->producto->nombre;
                 $content["cantidad"] = $pro->cantidad;
-                $content["precio"] = $pro->precio;
+                $content["precio"] = number_format($pro->precio,2, ",", ".");
 
                 array_push($datos,$content);
             }
@@ -296,7 +296,7 @@ class ClienteController extends Controller
             $report->save();
 
             DB::commit();
-            return redirect()->route('detail-client', ['id' => $cliente->id])->with('message', 'Cliente Editado Correctamente');
+            return redirect()->route('detail-client', ['id' => $cliente->id])->with('message', 'Cliente Editado Exitosamente!');
         }catch (\Illuminate\Database\QueryException $e){
             //GRABAR ERRORES EN LA BD Y SU CORRESPONDIENTE MENSAJE
             //Asignar los valores al nuevo objeto de reporte
@@ -439,7 +439,7 @@ class ClienteController extends Controller
             $data_content["id"] = $sell->id;
             $data_content["dato-1"] = $sell->id;
             $data_content["dato-2"] = $sell->cliente->nombre;
-            $data_content["dato-3"] = $sell->monto." Bs";
+            $data_content["dato-3"] = number_format($sell->monto,2, ",", ".")." Bs";
             $data_content["dato-4"] = $sell->fecha;
             $data_content["dato-5"] = $sell->credito." días";
             if(!$sell->pendiente){

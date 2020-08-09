@@ -64,7 +64,17 @@
                         }
                     }
                 },
-  
+
+                buttonText:{
+                    today:    'Hoy',
+                    month:    'Mes',
+                    week:     'Semana',
+                    day:      'Día',
+                    list:     'Lista',
+                },
+                
+                allDayText: 'Todo el día',
+                
                 dateClick: function(info){
                     limpiarFormulario();
                     $('#txtFecha').val(info.dateStr);
@@ -155,7 +165,7 @@
                     }
 
                     $('#exampleModal').modal();
-                },    
+                },
           
                 events: "{{ url('/Calendario/show')}}"
             });
@@ -303,12 +313,69 @@
                 $('.l1').hide();
                 $('.l2').hide();
                 $('.l3').show();
-            });        
+            });
+
+            //CAMBIAR EL TEXTO DE LOS BOTONES DE MES-DIA-SEMANA-LISTADO
+            /* $(".fc-dayGridMonth-button").text("mes");
+            $(".fc-timeGridWeek-button ").text("semanal");
+            $(".fc-timeGridDay-button ").text("diario");
+            $(".fc-listMonth-button").text("listado"); */
+            $('.fc-axis fc-widget-content').text('Todo el día');
+
         });
     </script>
 @endsection
 
 @section('info')
+    <style>
+        /* BOTONES DEL MODAL */
+        @media (max-width: 442px) {  
+            #Clientebtn-div{
+                flex-basis: unset;
+            }
+
+            #Empleadobtn-div, #Proveedorbtn-div{
+                margin-top: 10px;
+                flex-basis: unset;
+            }
+
+            #Proveedorbtn, #Empleadobtn, #Clientebtn{
+                width: 80%;
+            }
+        }
+
+        /* BOTONES DE LA PANTALLA PRINCIPAL QUE FILTRA EL CALENDARIO */
+        @media (max-width: 1000px) {  
+            #calendar{
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 600px) {  
+            #calendar{
+                font-size: 8px;
+            }
+        }
+
+        @media (max-width: 500px) {  
+            #calendar{
+                font-size: 7px;
+            }
+        }
+
+        @media (max-width: 450px) {  
+            #calendar{
+                font-size: 6px;
+            }
+        }
+
+        @media (max-width: 400px) {  
+            #calendar{
+                font-size: 5px;
+            }
+        }
+    </style>
+
     <div class="container">
         <div class="row">
             <div class="col"></div>
@@ -386,20 +453,20 @@
                         </div>
 
                         <div class="form-group col-md-12">
-                            <label>Descripcion:</label>
+                            <label>Descripción:</label>
                             <textarea  class="form-control" name="txtDescripcion" id="txtDescripcion" rows="3" required></textarea>
                         </div>
 
                         <div class="col-md-12 mb-4">
-                            <div class="container content-center">
-                                <div class="row">
-                                    <div class="col ">
+                            <div class="container">
+                                <div class="row justify-content-center">
+                                    <div class="col text-center" id="Clientebtn-div">
                                         <button id="Clientebtn" class="btn btn-secondary">Clientes</button>
                                     </div>
-                                    <div class="col">
+                                    <div class="col text-center" id="Empleadobtn-div">
                                         <button  id="Empleadobtn" class="btn btn-secondary">Empleados</button>
                                     </div>
-                                    <div class="col">
+                                    <div class="col text-center" id="Proveedorbtn-div">
                                         <button id="Proveedorbtn" class="btn btn-secondary">Proveedores</button>   
                                     </div>
                                 </div>

@@ -280,7 +280,7 @@
                     array(
                         "color-header" => "#BF6000",
                         "color-inside" => "#FF8100",
-                        "cantidad" => $costos_total." Bs",
+                        "cantidad" => number_format($costos_total,2, ",", ".")." Bs",
                         "text" => "TOTAL DE COSTOS",
                         "figure" => "fa-book",
                         "col" => "col-lg"
@@ -296,7 +296,7 @@
                     array(
                         "color-header" => "#014A1D",
                         "color-inside" => "#028936",
-                        "cantidad" => $utilidad_total." Bs",
+                        "cantidad" => number_format($utilidad_total,2, ",", ".")." Bs",
                         "text" => "UTILIDAD",
                         "figure" => "fa-money",
                         "col" => "col-lg"

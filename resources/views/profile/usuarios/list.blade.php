@@ -27,7 +27,7 @@
     @endif
     @if(Auth::user()->tipo == "admin")
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración (Back-Ups)</a>
+            <a class="nav-link text-secondary" href="{{ route('list-backups') }}">Restauración y Respaldo</a>
         </li>
     @endif
     </ul>
@@ -232,7 +232,7 @@
                                     "icon" => "fa-leanpub",
                                     "id_name" => "form-tipo",
                                     "form_name" => "tipo",
-                                    "title" => "Selecciona un periodo",
+                                    "title" => "Selecciona un Tipo",
                                     "options" => array(
                                         array(
                                             "value" => "todos",
@@ -247,7 +247,7 @@
                                             "nombre" => "Operador",
                                         ),
                                     ),
-                                    "validate" => "Periodo es requerido",
+                                    "validate" => "Tipo de usuario es requerido",
                                     "bd-error" => "LO QUE SEA",
                                     "requerido" => "req-true",
                                 ),

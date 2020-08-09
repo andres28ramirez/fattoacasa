@@ -16,7 +16,7 @@
             <a class="nav-link text-secondary" href="{{ route('list-gasto-costo') }}">Gastos y Costos</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Nómina</a>
+            <a class="nav-link text-secondary" href="{{ route('list-nomina') }}">Personal</a>
         </li>
         <li class="nav-item">
             <a class="nav-link text-secondary" href="{{ route('finance-pagos') }}">Pagos</a>
@@ -276,29 +276,33 @@
                 if($row->compra){
                     $data_content["dato-1"] = "Compra";
                     $data_content["dato-2"] = $row->compra->proveedor->nombre;
-                    $data_content["dato-3"] = $row->monto." Bs";
+                    $data_content["dato-3"] = number_format($row->monto,2, ",", ".")." Bs";
                     $data_content["dato-4"] = $row->compra->fecha;
                     $data_content["dato-5"] = $row->compra->pago ? $row->compra->pago->fecha_pago : "No posee";
-                    $data_content["dato-6"] = $row->compra->pago ? $row->compra->pago->referencia : "No posee";
+                    if($row->compra->pago)
+                        $data_content["dato-6"] = $row->compra->pago->referencia ? $row->compra->pago->referencia : "No posee";
+                    else
+                        $data_content["dato-6"] = "No posee";
                 }
                 else if($row->gastocosto){
                     $data_content["dato-1"] = $row->gastocosto->tipo;
                     $data_content["dato-2"] = $row->gastocosto->descripcion;
-                    $data_content["dato-3"] = $row->monto." Bs";
+                    $data_content["dato-3"] = number_format($row->monto,2, ",", ".")." Bs";
                     $data_content["dato-4"] = $row->gastocosto->fecha;
                     $data_content["dato-5"] = "No posee";
                     $data_content["dato-6"] = "No posee";
                 }
                 else if($row->nomina){
-                    $data_content["dato-1"] = "Pago Nómina";
-                    $data_content["dato-2"] = $row->nomina->trabajador->nombre." ".$row->nomina->trabajador->apellido;
-                    $data_content["dato-3"] = $row->monto." Bs";
+                    $data_content["dato-1"] = "Pago de Personal";
+                    $data_content["dato-2"] = "Global";
+                    $data_content["dato-3"] = number_format($row->monto,2, ",", ".")." Bs";
                     setlocale(LC_TIME, "spanish");
                     $data_content["dato-4"] = strftime("%B", strtotime($row->nomina->mes));
-                    $data_content["dato-5"] = $row->nomina->pago->fecha_pago;
-                    $data_content["dato-6"] = $row->nomina->pago->referencia;
+                    $data_content["dato-5"] = strftime("%Y", strtotime($row->nomina->mes));
+                    $data_content["dato-6"] = "No posee";
                 }
 
+                if($row->compra || $row->gastocosto || $row->nomina)
                 array_push($data_list["content"],$data_content);
             }
         @endphp
@@ -348,7 +352,7 @@
                                         ),
                                         array(
                                             "value" => "Pago de Nómina",
-                                            "nombre" => "Pago de Nómina",
+                                            "nombre" => "Pago de Personal",
                                         ),
                                     ),
                                     "validate" => "Tiempo a evaluar es requerido",
