@@ -4,6 +4,15 @@
 
 Fatto a Casa is a project for an administrative system that controls the resources of the enterprise as inventory, supply, clients, providers and finances. With the adding of graphics that shows how live management of the business is going. 
 
+## Languages & Frameworks
+
+<strong>PHP v7.2</strong><br>
+<strong>Laravel 6.0</strong><br>
+<strong>JavaScript</strong><br>
+<strong>jQuery</strong><br>
+<strong>CSS3</strong><br>
+<strong>HTML</strong>
+
 ## Contributing
 
 This project can grow even much further with the adding of new options or modules.
