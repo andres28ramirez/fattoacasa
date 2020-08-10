@@ -9,6 +9,6 @@ Fatto a Casa is a project for an administrative system that controls the resourc
 This project can grow even much further with the adding of new options or modules.
 
 ## Database Info
-Database: manual_fatto.sql
-Principal user: fabianam28
-Password: fabiana123456
+Database: manual_fatto.sql <br>
+Principal user: fabianam28 <br>
+Password: fabiana123456 <br>
